@@ -1,0 +1,146 @@
+import { Fragment, useState } from 'react';
+import {
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
+  Divider,
+  Radio,
+  RadioGroup,
+  Text,
+  Title2,
+} from '@fluentui/react-components';
+import { ArrowClockwiseRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
+import { useHabits } from '@/domain/habits/HabitsContext.jsx';
+import { DESIGN_OPTIONS } from '@/platform/detect.js';
+import { usePlatform } from '@/platform/PlatformContext.jsx';
+import { useInstallPrompt } from '@/platform/useInstallPrompt.js';
+
+function CardTitle({ title, description }) {
+  return (
+    <div>
+      <Text weight="semibold" block>{title}</Text>
+      {description && <Text size={300} block>{description}</Text>}
+    </div>
+  );
+}
+
+export default function SettingsScreen() {
+  const { resetAll } = useHabits();
+  const { os, browser, displayMode, designSystem, installed, override, setOverride } = usePlatform();
+  const { canPrompt, promptInstall, outcome, instructions } = useInstallPrompt();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const rows = [
+    ['Platform', os],
+    ['Browser', browser],
+    ['Display mode', displayMode],
+    ['Design system', designSystem],
+    ['Install status', installed ? 'Installed' : 'Browser tab'],
+  ];
+
+  return (
+    <section className="fluent-screen">
+      <Title2>Settings</Title2>
+
+      <Card>
+        <CardTitle title="Platform" description="What the app detected at start" />
+        <dl className="info-list">
+          {rows.map(([label, value], index) => (
+            <Fragment key={label}>
+              {index > 0 && <Divider />}
+              <div className="info-row">
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            </Fragment>
+          ))}
+        </dl>
+      </Card>
+
+      <Card>
+        <CardTitle
+          title="Design system preview"
+          description="Force a UI kit to preview it in this tab. Changing it reloads the page."
+        />
+        <RadioGroup
+          value={override ?? 'auto'}
+          onChange={(_, data) => setOverride(data.value === 'auto' ? null : data.value)}
+        >
+          {DESIGN_OPTIONS.map((option) => (
+            <Radio key={option.value ?? 'auto'} value={option.value ?? 'auto'} label={option.label} />
+          ))}
+        </RadioGroup>
+      </Card>
+
+      <Card>
+        <CardTitle
+          title="Install app"
+          description={installed ? 'Already installed' : 'Get the native look for your platform.'}
+        />
+        {installed ? null : outcome === 'accepted' ? (
+          <Text size={300}>Installed — open Streaks from your taskbar / Start menu.</Text>
+        ) : canPrompt ? (
+          <Button appearance="primary" icon={<ArrowDownloadRegular />} onClick={() => promptInstall()}>
+            Install app
+          </Button>
+        ) : (
+          <div>
+            <Text size={300} weight="semibold" block>{instructions.title}</Text>
+            <ol className="install-steps">
+              {instructions.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <CardTitle title="Reset data" description="Clear everything and restore the demo habits." />
+        <Button
+          appearance="secondary"
+          icon={<ArrowClockwiseRegular />}
+          className="destructive-text"
+          onClick={() => setConfirmOpen(true)}
+        >
+          Reset data
+        </Button>
+        <Dialog open={confirmOpen} onOpenChange={(_, data) => setConfirmOpen(data.open)}>
+          <DialogSurface>
+            <DialogBody>
+              <DialogTitle>Reset all data?</DialogTitle>
+              <DialogContent>
+                Your habits and completions will be deleted and replaced with the four demo habits.
+              </DialogContent>
+              <DialogActions>
+                <Button appearance="secondary" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                <Button
+                  appearance="primary"
+                  className="destructive-text"
+                  onClick={() => {
+                    resetAll();
+                    setConfirmOpen(false);
+                  }}
+                >
+                  Reset
+                </Button>
+              </DialogActions>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
+      </Card>
+
+      <Card>
+        <CardTitle
+          title="About"
+          description="One domain layer, four UIs — Cupertino, Material, Fluent, shadcn"
+        />
+      </Card>
+    </section>
+  );
+}
