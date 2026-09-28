@@ -1,0 +1,25 @@
+{
+  "name": "@native-pwa-experiment/ui-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Six design languages (Cupertino, Material, Fluent, Yaru, custom, shadcn) rendered from one component tree",
+  "keywords": ["pwa", "design-system", "framework7", "fluent", "cupertino", "material", "yaru", "shadcn"],
+  "exports": {
+    ".": "./src/index.js",
+    "./design-systems": "./src/designSystems.js"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "dependencies": {
+    "@fluentui/react-components": "^9.74",
+    "@fluentui/react-icons": "^2",
+    "framework7": "^9.1",
+    "framework7-icons": "^5",
+    "framework7-react": "^9.1",
+    "lucide-react": "^1.41",
+    "material-icons": "^1.13"
+  }
+}

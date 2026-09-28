@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DESIGN_OPTIONS,
-  DESIGN_SYSTEMS,
   detectBrowser,
   detectOS,
   installInstructions,
   readOverrideFromUrl,
-  resolveDesignSystem,
 } from '../detect.js';
 
 const UA = {
@@ -77,38 +74,11 @@ describe('detectBrowser', () => {
   });
 });
 
-describe('resolveDesignSystem', () => {
-  const OS = ['ios', 'macos', 'android', 'windows', 'linux', 'unknown'];
-
-  it('is web in a browser tab on every OS', () => {
-    OS.forEach((os) => expect(resolveDesignSystem({ os, installed: false, override: null })).toBe('web'));
-  });
-
-  it('maps installed OS to the native kit', () => {
-    expect(resolveDesignSystem({ os: 'ios', installed: true, override: null })).toBe('cupertino');
-    expect(resolveDesignSystem({ os: 'macos', installed: true, override: null })).toBe('cupertino');
-    expect(resolveDesignSystem({ os: 'android', installed: true, override: null })).toBe('material');
-    expect(resolveDesignSystem({ os: 'linux', installed: true, override: null })).toBe('material');
-    expect(resolveDesignSystem({ os: 'unknown', installed: true, override: null })).toBe('material');
-    expect(resolveDesignSystem({ os: 'windows', installed: true, override: null })).toBe('fluent');
-  });
-
-  it('lets a valid override win over detection', () => {
-    expect(resolveDesignSystem({ os: 'windows', installed: true, override: 'cupertino' })).toBe('cupertino');
-    expect(resolveDesignSystem({ os: 'ios', installed: false, override: 'material' })).toBe('material');
-    expect(resolveDesignSystem({ os: 'ios', installed: true, override: 'web' })).toBe('web');
-  });
-
-  it('ignores invalid overrides', () => {
-    expect(resolveDesignSystem({ os: 'ios', installed: true, override: 'bogus' })).toBe('cupertino');
-    expect(resolveDesignSystem({ os: 'ios', installed: true, override: undefined })).toBe('cupertino');
-  });
-});
-
 describe('readOverrideFromUrl', () => {
   it('returns the design when present', () => {
     expect(readOverrideFromUrl('?design=cupertino')).toBe('cupertino');
-    expect(readOverrideFromUrl('?foo=1&design=fluent')).toBe('fluent');
+    expect(readOverrideFromUrl('?foo=1&design=yaru')).toBe('yaru');
+    expect(readOverrideFromUrl('?design=shadcn')).toBe('shadcn');
   });
 
   it('returns null for auto or empty (clears the override)', () => {
@@ -121,14 +91,7 @@ describe('readOverrideFromUrl', () => {
     expect(readOverrideFromUrl('')).toBeUndefined();
     expect(readOverrideFromUrl('?foo=bar')).toBeUndefined();
     expect(readOverrideFromUrl('?design=nope')).toBeUndefined();
-  });
-});
-
-describe('DESIGN_OPTIONS', () => {
-  it('lists auto plus every design system', () => {
-    expect(DESIGN_OPTIONS[0]).toEqual({ value: null, label: 'Auto (detect)' });
-    expect(DESIGN_OPTIONS.slice(1).map((o) => o.value)).toEqual(DESIGN_SYSTEMS);
-    DESIGN_OPTIONS.forEach((o) => expect(typeof o.label).toBe('string'));
+    expect(readOverrideFromUrl('?design=ios')).toBeUndefined();
   });
 });
 

@@ -1,20 +1,21 @@
 /**
  * Platform layer: detects the environment once at boot (OS, browser, display
- * mode, install status) and resolves which design system to render — an
+ * mode, install status) and resolves which design language to render — an
  * explicit override from ?design=… / localStorage wins, otherwise installed
- * PWAs get their native kit (Cupertino on iOS/macOS, Material on Android,
- * Fluent on Windows) and plain browser tabs get the web UI. Live media
- * queries keep display mode and color scheme up to date while running.
+ * PWAs get their OS-native language (Cupertino on iOS/macOS, Material on
+ * Android, Fluent on Windows, Yaru on Linux) and browser tabs get the app's
+ * custom one. The language registry itself lives in the ui-kit package; this
+ * layer only feeds it what it detected. Live media queries keep display mode
+ * and color scheme up to date while running.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { DESIGN_SYSTEMS, resolveDesignSystem } from '@native-pwa-experiment/ui-kit/design-systems';
 import {
-  DESIGN_SYSTEMS,
   detectBrowser,
   detectDisplayMode,
   detectOS,
   isInstalled,
   readOverrideFromUrl,
-  resolveDesignSystem,
 } from './detect.js';
 
 const PlatformContext = createContext(null);

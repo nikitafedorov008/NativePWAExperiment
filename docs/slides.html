@@ -171,8 +171,8 @@
 <!-- 3 · The app -->
 <section class="slide">
   <div class="kicker">The demo app</div>
-  <h2>Streaks — the same app, four native looks</h2>
-  <p class="sub">The UI kit is chosen at runtime: detected for installed PWAs, forceable via <code>?design=…</code> for previews.</p>
+  <h2>Streaks — the same app, six design languages</h2>
+  <p class="sub">The design language is chosen at runtime — detected for installed PWAs, forceable via <code>?design=…</code></p>
   <div style="display:flex; gap:24px; justify-content:center; margin-top:24px;">
     <div><div class="phone" style="width:170px; height:396px; --sz:#000000"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Cupertino</b> · iOS / macOS</p></div>
     <div><div class="phone phone--android" style="width:170px; height:396px; --sz:#111318"><div class="statuszone"><span>9:41</span><span class="punch"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Material</b> · Android / Linux</p></div>
@@ -186,17 +186,17 @@
 <section class="slide">
   <div class="kicker">Architecture</div>
   <h2>One domain layer, swappable UI kits</h2>
-  <div style="margin-top:26px; display:flex; flex-direction:column; gap:0;">
+  <div style="margin-top:38px; display:flex; flex-direction:column; gap:0;">
     <div style="display:flex; gap:20px;">
-      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-db"/></svg>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (80 tests).</p></div>
-      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-compass"/></svg>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design system (override → installed → web) and owns the install prompt store.</p></div>
+      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-db"/></svg>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (unit-tested).</p></div>
+      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-compass"/></svg>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design language (override → installed → custom) and owns the install prompt store.</p></div>
       <div class="box" style="flex:1;"><h3><svg class="ic"><use href="#i-globe"/></svg>PWA shell</h3><p>vite-plugin-pwa: manifest, auto-updating service worker, per-kit lazy chunks, offline precache.</p></div>
     </div>
-    <div style="display:flex; justify-content:center; padding:10px 0;"><svg class="ic" style="color:var(--muted); transform:rotate(90deg);"><use href="#i-download"/></svg></div>
+    <div style="display:flex; justify-content:center; padding:34px 0;"><svg class="ic" style="color:var(--muted); transform:rotate(90deg);"><use href="#i-download"/></svg></div>
     <div style="display:flex; gap:20px;">
       <div class="box" style="flex:1; border-color:var(--primary); background:var(--primary-soft);"><h3>Cupertino · Material</h3><p>Framework7 9 — one shell, two native languages (<code>theme="ios" / "md"</code>), F7 icons, swipe actions, FAB, system dialogs.</p></div>
       <div class="box" style="flex:1;"><h3>Fluent</h3><p>@fluentui/react-components v9 — real Fluent widgets, CSS-in-JS design tokens, TabList navigation, dark theme from the OS.</p></div>
-      <div class="box" style="flex:1;"><h3>Web</h3><p>Own Flutter-style widget kit — inline styles from a single theme file (<code>theme.jsx</code>), no CSS frameworks at all.</p></div>
+      <div class="box" style="flex:1;"><h3>Yaru · custom · shadcn</h3><p>Own Flutter-style widget kit — inline styles from a single theme file (<code>theme.jsx</code>); three languages, no CSS frameworks.</p></div>
     </div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>04</span></div>
@@ -209,7 +209,7 @@
   <div style="margin-top:26px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
     <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-home"/></svg></div><h3 style="margin:0 0 4px;">Installs like an app</h3><p>Own icon on the home screen or dock, opens in a standalone window — no browser chrome, no store.</p></div>
     <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-cloud-off"/></svg></div><h3 style="margin:0 0 4px;">Works offline</h3><p>Service worker precaches the whole build — flip on airplane mode and cold-start it.</p></div>
-    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-layers"/></svg></div><h3 style="margin:0 0 4px;">Platform widgets &amp; gestures</h3><p>FAB and pill tabs on Android, circular checks and swipe-to-delete on iOS, TabList on Windows.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-layers"/></svg></div><h3 style="margin:0 0 4px;">Platform widgets &amp; gestures</h3><p>FAB and pill tabs on Android, circular checks and swipe-to-delete on iOS, TabList on Windows, a headerbar on Ubuntu.</p></div>
     <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-sparkles"/></svg></div><h3 style="margin:0 0 4px;">System-feel interactions</h3><p>Tap-to-complete, per-day toggling, native-style dialogs and confirmations, confetti on a perfect day.</p></div>
     <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-moon"/></svg></div><h3 style="margin:0 0 4px;">Follows the system</h3><p>Dark and light themes, safe-area insets for notches and home bars, locale-aware dates.</p></div>
     <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-refresh"/></svg></div><h3 style="margin:0 0 4px;">Zero-friction updates</h3><p>The auto-updating service worker ships the next version on the next launch — no review queue.</p></div>
@@ -266,21 +266,20 @@
         npm install<br/>
         npm run dev &nbsp;&nbsp;<span style="color:var(--muted)"># http://localhost:5173</span><br/>
         npm run build &nbsp;<span style="color:var(--muted)"># static dist/ — host anywhere</span><br/>
-        npm test &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--muted)"># 80 unit tests</span>
+        npm test &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--muted)"># unit tests</span>
       </div>
-      <p class="sub" style="font-size:15px; margin-top:18px;">Open it in a browser tab for the web look — then install it and watch the UI switch to your platform’s native kit.</p>
+      <p class="sub" style="font-size:15px; margin-top:18px;">Open it in a browser tab for the custom look — then install it and watch the UI switch to your platform’s design language.</p>
     </div>
     <div style="flex:1;">
       <div class="box" style="font-family:'SF Mono', ui-monospace, Menlo, monospace; font-size:13.5px; line-height:1.9; color:var(--muted);">
         src/<br/>
         ├─ <b style="color:var(--text)">domain/</b> habits · celebration <span style="opacity:.7">— pure logic + tests</span><br/>
         ├─ <b style="color:var(--text)">platform/</b> detection · install store<br/>
-        ├─ <b style="color:var(--text)">app/</b> adaptive switcher<br/>
-        └─ <b style="color:var(--text)">ui/</b><br/>
-        &nbsp;&nbsp;&nbsp;├─ f7/ + cupertino/ + material/<br/>
-        &nbsp;&nbsp;&nbsp;├─ fluent/<br/>
-        &nbsp;&nbsp;&nbsp;├─ web/ <span style="opacity:.7">— code-styled kit + theme</span><br/>
-        &nbsp;&nbsp;&nbsp;└─ appStyles.js <span style="opacity:.7">— all custom CSS in one file</span>
+        ├─ <b style="color:var(--text)">app/</b> composition root<br/>
+        └─ <b style="color:var(--text)">packages/ui-kit/</b> <span style="opacity:.7">— workspace package</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;├─ designSystems.js <span style="opacity:.7">— the six languages</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;├─ theme.jsx + widgets.jsx <span style="opacity:.7">— code kit</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;└─ kits/ <span style="opacity:.7">f7 · fluent · code</span>
       </div>
     </div>
   </div>

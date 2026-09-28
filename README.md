@@ -4,22 +4,26 @@
 
 **A proof of concept that a progressive web app in 2026 can be indistinguishable from a native mobile or desktop application — including the UI itself.**
 
-This repository is a companion to [whatpwacando.today](https://whatpwacando.today/). That site catalogs *what* browsers can do today; this experiment demonstrates *how it feels*: one synthetic app, shipped as a PWA, that installs to your home screen / dock, works offline, and — the centerpiece — renders itself with the **native UI kit of your platform**.
+This repository is a companion to [whatpwacando.today](https://whatpwacando.today/). That site catalogs *what* browsers can do today; this experiment demonstrates *how it feels*: one synthetic app, shipped as a PWA, that installs to your home screen / dock, works offline, and — the centerpiece — renders itself with the **native design language of your platform**.
 
 ## The demo app: Streaks
 
-A small but complete daily habit tracker (progress, streaks, per-day history, add/rename/delete, celebrations). The UI kit is chosen **at runtime**:
+A small but complete daily habit tracker (progress, streaks, per-day history, add/rename/delete, celebrations). The design language is chosen **at runtime**:
 
-- installed on **iOS / macOS** → **Cupertino** (Framework7 `ios`)
-- installed on **Android / Linux** → **Material** (Framework7 `md`)
-- installed on **Windows** → **Fluent** (`@fluentui/react-components` v9)
-- in a plain **browser tab** → a lightweight **web kit** (a Flutter-style widget set styled from a single theme file)
-
-You can force any look for a preview: `?design=cupertino|material|fluent|web` (persisted, changeable later in Settings).
+| Design language | Engine | Gets it when |
+|---|---|---|
+| **Cupertino** | Framework7 (`ios`) | installed on iOS / macOS |
+| **Material** | Framework7 (`md`) | installed on Android |
+| **Fluent** | Fluent UI v9 | installed on Windows |
+| **Yaru** | own code kit | installed on Linux (Ubuntu's language) |
+| **custom** | own code kit | browser tab (the app's own brand) |
+| **shadcn** | own code kit | preview |
 
 <p align="center">
-  <img src="docs/assets/readme-app.png" alt="The same app in four native looks" width="900" />
+  <img src="docs/assets/readme-app.png" alt="The same app in native looks" width="900" />
 </p>
+
+You can force any language for a preview: `?design=cupertino|material|fluent|yaru|custom|shadcn` (or `?design=auto` to return to detection) — it persists and is also switchable in Settings.
 
 ## How it works
 
@@ -27,24 +31,30 @@ You can force any look for a preview: `?design=cupertino|material|fluent|web` (p
   <img src="docs/assets/readme-architecture.png" alt="Architecture: one domain layer, swappable UI kits" width="900" />
 </p>
 
-- **`src/domain`** — pure habit logic: a reducer, versioned localStorage persistence, streak/progress selectors. Zero UI imports, fully unit-tested (80 tests).
-- **`src/platform`** — detects OS, browser, display mode and install status; resolves the design system (explicit override → installed → web) and owns the captured `beforeinstallprompt` flow with per-browser install instructions.
-- **`src/app`** — an adaptive switcher that lazy-loads exactly one UI implementation, so a browser tab never downloads Framework7 and an installed Android user never downloads Fluent.
-- **`src/ui`** — the three implementations:
-  - `f7/` — a shared Framework7 shell rendering Cupertino **and** Material from one component tree (`theme="ios" | "md"`), with swipe-to-delete, FAB, system dialogs and platform icon fonts;
-  - `fluent/` — real Fluent v9 widgets whose styling is CSS-in-JS driven by design tokens;
-  - `web/` — a Flutter-style widget kit (`theme.jsx` + `widgets.jsx`) where all styling is inline from code — the browser-tab fallback and the "how elegant can this be" exhibit.
-- **`src/ui/appStyles.js`** — every custom style the kits don't provide (habit check circles, week strips, emoji grid), injected as a single stylesheet, scoped per kit (`.framework7-root` / `.fluent-app`). No `.css` files in the app.
+- **`src/domain`** — pure habit logic: a reducer, versioned localStorage persistence, streak/progress selectors. Zero UI imports, fully unit-tested.
+- **`src/platform`** — detects OS, browser, display mode and install status; owns the captured `beforeinstallprompt` flow with per-browser install instructions; feeds the detector's answer into the kit's design-language resolver.
+- **`packages/ui-kit`** — a workspace package with all UI: the six design languages, the adaptive switcher, and the widget kit. It never imports application code — the app injects the domain API into it (`src/app/App.jsx`), so the package can be lifted into another project as-is. See [its README](packages/ui-kit/README.md).
+- **`src/app`** — the composition root: builds the API object (habits, install flow, platform info, constants) and mounts the kit.
+
+### Inside the kit
+
+| Kind | Design languages | How |
+|---|---|---|
+| Native kits | `cupertino`, `material`, `fluent` | real libraries — Framework7 renders one component tree in either Apple or Google language; Fluent UI styles itself from design tokens |
+| Code kit | `yaru`, `custom`, `shadcn` | a small Flutter-style widget set styled *only* from tokens in `packages/ui-kit/src/theme.jsx` — adding a language there is a palette plus a behavior block, no new components |
+
+All habit-specific styling (check circles, week strips, emoji grid, stat tiles) lives in a single file, `packages/ui-kit/src/appStyles.js`, injected as one stylesheet and scoped per kit. There are no `.css` files in the app or the package.
 
 ### What makes it feel native
 
 | Detail | How |
 |---|---|
-| Installed-mode detection | `display-mode` media queries + `navigator.standalone` switch the whole design system on launch |
+| Installed-mode detection | `display-mode` media queries + `navigator.standalone` switch the whole design language on launch |
 | Real install flow | captured `beforeinstallprompt` re-fired from a button; iOS gets per-browser step lists |
 | Offline | vite-plugin-pwa service worker precaches the build (`autoUpdate`) |
-| Native chrome | safe-area insets, system dark mode, platform typography and icon fonts |
-| Platform widgets | FAB + pill tabs (Material), circular checks + swipe-to-delete (Cupertino), `TabList` (Fluent) |
+| Native chrome | safe-area insets, system dark mode, platform typography (SF / Roboto / Segoe / Ubuntu) and icon fonts |
+| Platform idioms | FAB + pill tabs (Material), circular checks + swipe-to-delete (Cupertino), TabList (Fluent), headerbar with window controls (Yaru) |
+| Lean bundles | each language is a lazy chunk: a browser tab never downloads Framework7, an installed Android user never downloads Fluent UI |
 
 ## Run it locally
 
@@ -54,10 +64,10 @@ cd NativePWAExperiment
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # static dist/ — host anywhere
-npm test         # 80 unit tests
+npm test         # unit tests (domain + design-system resolution)
 ```
 
-Open the dev URL in a browser tab for the web look — then **install** the app (banner or browser menu) and launch it from your home screen / dock to see your platform's native UI.
+Open the dev URL in a browser tab for the `custom` look — then **install** the app (banner or browser menu) and launch it from your home screen / dock to see your platform's native language.
 
 ## Presentation
 
@@ -72,6 +82,7 @@ A short slide deck about the experiment is included and downloadable:
 - [Excalidraw](https://excalidraw.com/) · [Squoosh](https://squoosh.app/) — flagship installable, offline-capable PWAs
 - [Starbucks PWA](https://www.starbucks.com/) · [Uber](https://m.uber.com/) · [X](https://x.com/) — production PWAs at scale
 - [Framework7](https://framework7.io/) · [Fluent UI React v9](https://react.fluentui.dev/) — the kits that make native looks possible from web code
+- [Yaru](https://github.com/ubuntu/yaru) · [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/) — the Ubuntu / GNOME design language the `yaru` theme follows
 - [Learn PWA (web.dev)](https://web.dev/learn/pwa) · [PWA Stats](https://www.pwastats.com/) — reference material and field statistics
 
 ## Scope & honest caveats

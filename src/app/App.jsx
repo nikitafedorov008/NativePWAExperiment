@@ -1,24 +1,26 @@
 /**
- * Adaptive switcher: resolves the design system from PlatformContext and lazy
- * loads exactly one UI implementation. Chunks are split per kit, so a browser
- * tab never downloads Framework7 and an installed Android user never downloads
- * Fluent code. Splash covers the chunk load.
+ * App composition root for the UI.
+ *
+ * The ui-kit package knows nothing about this app: everything its screens need
+ * is injected here — the habit domain state, the install flow, platform info
+ * and the domain constants the forms use. Swap the kit for another one and
+ * only this file changes.
  */
-import { lazy, Suspense } from 'react';
-import { createAdaptive } from '../platform/adaptive.jsx';
-import Splash from './Splash.jsx';
-
-const Root = createAdaptive({
-  web: lazy(() => import('../ui/web/Root.jsx')),
-  cupertino: lazy(() => import('../ui/cupertino/Root.jsx')),
-  material: lazy(() => import('../ui/material/Root.jsx')),
-  fluent: lazy(() => import('../ui/fluent/Root.jsx')),
-});
+import { KitApiProvider, Root } from '@native-pwa-experiment/ui-kit';
+import { useHabits } from '../domain/habits/HabitsContext.jsx';
+import { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } from '../domain/habits/model.js';
+import { usePlatform } from '../platform/PlatformContext.jsx';
+import { useInstallPrompt } from '../platform/useInstallPrompt.js';
 
 export default function App() {
+  const habits = useHabits();
+  const install = useInstallPrompt();
+  const platform = usePlatform();
+  const constants = { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH };
+
   return (
-    <Suspense fallback={<Splash />}>
+    <KitApiProvider api={{ habits, install, platform, constants }}>
       <Root />
-    </Suspense>
+    </KitApiProvider>
   );
 }

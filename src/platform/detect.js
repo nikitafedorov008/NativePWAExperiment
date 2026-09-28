@@ -3,16 +3,12 @@
  * UA parsing is only a fallback: userAgentData.platform is preferred where
  * available. installInstructions() powers the per-browser "how to install"
  * steps shown when beforeinstallprompt is unavailable (iOS Safari etc.).
+ *
+ * Which design language to render is decided by the ui-kit registry
+ * (resolveDesignSystem), not here — this module only answers "what is this
+ * device running?".
  */
-export const DESIGN_SYSTEMS = ['web', 'cupertino', 'material', 'fluent'];
-
-export const DESIGN_OPTIONS = [
-  { value: null, label: 'Auto (detect)' },
-  { value: 'web', label: 'Web · shadcn/ui' },
-  { value: 'cupertino', label: 'Cupertino · iOS/macOS' },
-  { value: 'material', label: 'Material · Android/Linux' },
-  { value: 'fluent', label: 'Fluent · Windows' },
-];
+import { DESIGN_SYSTEMS } from '@native-pwa-experiment/ui-kit/design-systems';
 
 const UA_PLATFORM_OS = {
   Windows: 'windows',
@@ -24,8 +20,6 @@ const UA_PLATFORM_OS = {
 };
 
 const DISPLAY_MODES = ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'];
-
-const INSTALLED_DESIGN = { ios: 'cupertino', macos: 'cupertino', windows: 'fluent' };
 
 export function detectOS({ ua = '', uaPlatform = '', maxTouchPoints = 0 } = {}) {
   if (uaPlatform && UA_PLATFORM_OS[uaPlatform]) return UA_PLATFORM_OS[uaPlatform];
@@ -54,12 +48,6 @@ export function detectDisplayMode() {
 export const isInstalled = () =>
   detectDisplayMode() !== 'browser' ||
   (typeof navigator !== 'undefined' && navigator.standalone === true);
-
-export function resolveDesignSystem({ os, installed, override }) {
-  if (DESIGN_SYSTEMS.includes(override)) return override;
-  if (!installed) return 'web';
-  return INSTALLED_DESIGN[os] ?? 'material';
-}
 
 export function readOverrideFromUrl(search = window.location.search) {
   const params = new URLSearchParams(search);

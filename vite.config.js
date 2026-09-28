@@ -36,10 +36,17 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Workspace package — aliased to its source so Vite transforms its JSX
+      // directly (it is a linked workspace, not a pre-built dependency).
+      // Subpaths must come before the bare name: the first match wins.
+      '@native-pwa-experiment/ui-kit/design-systems': fileURLToPath(new URL('./packages/ui-kit/src/designSystems.js', import.meta.url)),
+      '@native-pwa-experiment/ui-kit': fileURLToPath(new URL('./packages/ui-kit/src/index.js', import.meta.url)),
+    },
   },
   test: {
     environment: 'node',
-    include: ['src/**/__tests__/**/*.test.js'],
+    include: ['src/**/__tests__/**/*.test.js', 'packages/**/__tests__/**/*.test.js'],
   },
 });
