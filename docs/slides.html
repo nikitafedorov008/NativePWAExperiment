@@ -33,32 +33,39 @@
   .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none;
         stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-  /* ---- phone mockup frame ---- */
+  /* ---- phone mockup frames: iOS (default) & Android ---- */
   .phone {
-    position: relative; border-radius: 30px; flex-shrink: 0;
+    position: relative; flex-shrink: 0;
     border: 6px solid #04060b; outline: 1px solid #2a3342;
     background: #000; overflow: hidden;
     box-shadow: 0 24px 60px rgba(0,0,0,.55);
-    display: flex; flex-direction: column;
+    display: flex; flex-direction: column; border-radius: 32px;
   }
+  .phone--android { border-radius: 27px; }
   .phone .shot { flex: 1; min-height: 0; width: 100%; object-fit: cover; display: block; }
   .phone .statuszone, .phone .bottomzone {
     position: relative; flex-shrink: 0; display: flex; align-items: center;
     background: var(--sz, #000);
   }
-  .phone .statuszone { height: 30px; justify-content: space-between; padding: 0 16px;
-    color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; }
-  .phone .statuszone svg { height: 9px; width: auto; display: block; }
+  .phone .statuszone { height: 24px; justify-content: space-between; padding: 0 14px;
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+  .phone .statuszone svg { height: 8px; width: auto; display: block; }
   .phone .statuszone .sicons { display: flex; gap: 4px; align-items: center; }
   .phone .island {
     position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
-    width: 64px; height: 17px; border-radius: 12px; background: #000;
+    width: 52px; height: 14px; border-radius: 10px; background: #000;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
   }
-  .phone .bottomzone { height: 22px; justify-content: center; }
-  .phone .homebar {
-    width: 84px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.92);
+  .phone--android .punch {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 11px; height: 11px; border-radius: 50%; background: #000;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
   }
+  .phone .bottomzone { height: 18px; justify-content: center; }
+  .phone .homebar {
+    width: 72px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.92);
+  }
+  .phone--android .homebar { width: 52px; height: 3px; background: rgba(255,255,255,.75); }
   .phone--light .statuszone { color: #10131a; background: var(--sz, #fff); }
   .phone--light .homebar { background: rgba(10,14,22,.8); }
 
@@ -128,15 +135,15 @@
 <!-- 1 · Title -->
 <section class="slide">
   <div style="display:flex; flex:1; gap:40px; align-items:center;">
-    <div style="width:56%;">
+    <div style="width:56%; align-self:center; padding-bottom:26px;">
       <div class="kicker">Proof of concept · 2026</div>
       <h1>Native PWA<br/>Experiment</h1>
       <p class="sub" style="max-width:520px;">A synthetic case showing that a progressive web app today can be indistinguishable from a native mobile or desktop application — including the UI itself.</p>
       <p style="margin-top:26px;"><span class="tag">Installable</span>&nbsp;<span class="tag">Offline</span>&nbsp;<span class="tag">Per-platform native UI</span></p>
     </div>
     <div style="position:relative; flex:1; height:100%;">
-      <div class="phone" style="position:absolute; width:258px; height:488px; right:200px; top:26px; transform:rotate(-5deg); --sz:#000000;"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
-      <div class="phone" style="position:absolute; width:258px; height:488px; right:16px; top:66px; transform:rotate(4deg); --sz:#111318;"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
+      <div class="phone" style="position:absolute; width:222px; height:508px; right:230px; top:60px; transform:rotate(-4deg); --sz:#000000"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
+      <div class="phone phone--android" style="position:absolute; width:222px; height:508px; right:20px; top:110px; transform:rotate(4deg); --sz:#111318"><div class="statuszone"><span>9:41</span><span class="punch"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
     </div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>github.com/nikitafedorov008</span></div>
@@ -167,10 +174,10 @@
   <h2>Streaks — the same app, four native looks</h2>
   <p class="sub">The UI kit is chosen at runtime: detected for installed PWAs, forceable via <code>?design=…</code> for previews.</p>
   <div style="display:flex; gap:24px; justify-content:center; margin-top:24px;">
-    <div><div class="phone" style="width:238px; height:386px; --sz:#000000"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Cupertino</b> · iOS / macOS</p></div>
-    <div><div class="phone" style="width:238px; height:386px; --sz:#111318"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Material</b> · Android / Linux</p></div>
-    <div><div class="phone" style="width:238px; height:386px; --sz:#0a0a0a"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/web-dark.png" alt="Web" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Web kit</b> · browser tab</p></div>
-    <div><div class="phone phone--light" style="width:238px; height:386px; --sz:#fbfbfd"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-light.png" alt="Cupertino light" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Light &amp; dark</b> · every kit</p></div>
+    <div><div class="phone" style="width:170px; height:396px; --sz:#000000"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Cupertino</b> · iOS / macOS</p></div>
+    <div><div class="phone phone--android" style="width:170px; height:396px; --sz:#111318"><div class="statuszone"><span>9:41</span><span class="punch"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Material</b> · Android / Linux</p></div>
+    <div><div class="phone" style="width:170px; height:396px; --sz:#0a0a0a"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/web-dark.png" alt="Web" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Web kit</b> · browser tab</p></div>
+    <div><div class="phone phone--light" style="width:170px; height:396px; --sz:#fbfbfd"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:8px"><use href="#i-signal"/></svg><svg class="ic" style="height:8px"><use href="#i-wifi"/></svg><svg class="ic" style="height:9px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-light.png" alt="Cupertino light" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Light &amp; dark</b> · every kit</p></div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>03</span></div>
 </section>
