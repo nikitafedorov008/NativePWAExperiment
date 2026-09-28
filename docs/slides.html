@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Native PWA Experiment — Presentation</title>
+<style>
+  :root {
+    --bg: #0b0e14; --surface: #151b26; --surface2: #1c2330;
+    --line: #263041; --primary: #2b7bff; --primary-soft: rgba(43,123,255,.14);
+    --text: #eef2f9; --muted: #93a0b4; --onbrand: #ffffff;
+  }
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  @media screen {
+    html { height: auto; display: flex; justify-content: center; }
+    body { transform-origin: top center; scale: min(1, calc(100vw / 1280)); margin: 0 auto; }
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; color: var(--text); }
+
+  .slide {
+    width: 1280px; height: 720px; position: relative; overflow: hidden;
+    background: var(--bg); page-break-after: always; break-after: page;
+    display: flex; flex-direction: column; padding: 56px 64px;
+  }
+  .foot {
+    position: absolute; left: 64px; right: 64px; bottom: 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--primary); }
+  h1 { font-size: 64px; line-height: 1.05; margin: 14px 0 0; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 40px; line-height: 1.1; margin: 10px 0 0; font-weight: 750; letter-spacing: -0.015em; }
+  .sub { font-size: 21px; color: var(--muted); line-height: 1.5; margin-top: 14px; }
+  .cols { display: flex; gap: 48px; flex: 1; margin-top: 8px; min-height: 0; }
+
+  .phone {
+    border-radius: 26px; border: 1px solid var(--line); background: #000;
+    overflow: hidden; flex-shrink: 0; box-shadow: 0 22px 60px rgba(0,0,0,.5);
+  }
+  .phone img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  .stat-num { font-size: 84px; font-weight: 800; color: var(--primary); line-height: 1; letter-spacing: -0.02em; }
+  .stat-label { font-size: 16px; color: var(--muted); margin-top: 6px; }
+  .hairline { height: 1px; background: var(--line); }
+
+  .row { display: flex; gap: 18px; align-items: flex-start; }
+  .row .n {
+    width: 34px; height: 34px; border-radius: 10px; background: var(--primary-soft);
+    color: var(--primary); font-weight: 800; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .row b { font-size: 18px; display: block; }
+  .row span { font-size: 14.5px; color: var(--muted); line-height: 1.45; display: block; margin-top: 2px; }
+
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .box h3 { margin: 0 0 4px; font-size: 17px; }
+  .box p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 16px; }
+  th, td { text-align: left; padding: 13px 18px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+  td:first-child { color: var(--muted); font-weight: 600; width: 24%; }
+  td { color: var(--text); }
+  .win { color: var(--primary); font-weight: 700; }
+
+  a { color: inherit; text-decoration: none; }
+  .link { color: var(--primary); font-weight: 600; }
+  code {
+    font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 15px;
+    background: var(--surface2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 2px 8px; color: #cfe0ff;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 · Title -->
+<section class="slide">
+  <div style="display:flex; flex:1; gap:40px; align-items:center;">
+    <div style="width:56%;">
+      <div class="kicker">Proof of concept · 2026</div>
+      <h1>Native PWA<br/>Experiment</h1>
+      <p class="sub" style="max-width:520px;">A synthetic case showing that a progressive web app today can be indistinguishable from a native mobile or desktop application — including the UI itself.</p>
+      <p style="margin-top:26px;"><span class="tag">Installable</span>&nbsp;<span class="tag">Offline</span>&nbsp;<span class="tag">Per-platform native UI</span></p>
+    </div>
+    <div style="position:relative; flex:1; height:100%;">
+      <div class="phone" style="position:absolute; width:252px; height:425px; right:200px; top:60px; transform:rotate(-5deg);"><img src="assets/cupertino-dark.png" alt="Cupertino UI" /></div>
+      <div class="phone" style="position:absolute; width:252px; height:425px; right:20px; top:96px; transform:rotate(4deg);"><img src="assets/material-dark.png" alt="Material UI" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>github.com/nikitafedorov008</span></div>
+</section>
+
+<!-- 2 · Idea -->
+<section class="slide">
+  <div class="kicker">The idea</div>
+  <h2 style="max-width:980px;">whatpwacando.today catalogs what the web <em>can</em> do.<br/>This experiment shows how it can <span style="color:var(--primary)">feel</span>.</h2>
+  <div class="cols" style="margin-top:40px; align-items:stretch;">
+    <div style="flex:1; display:flex; flex-direction:column; gap:26px; justify-content:center;">
+      <div class="row"><div class="n">1</div><div><b>One synthetic app</b><span>“Streaks”, a daily habit tracker — small enough to read, real enough to judge.</span></div></div>
+      <div class="row"><div class="n">2</div><div><b>Native UI per platform</b><span>Cupertino on iOS &amp; macOS, Material on Android &amp; Linux, Fluent on Windows.</span></div></div>
+      <div class="row"><div class="n">3</div><div><b>Judged like a native app</b><span>Install flow, offline start, dark mode, safe areas, platform widgets and gestures.</span></div></div>
+    </div>
+    <div style="width:420px; display:flex; flex-direction:column; gap:22px; justify-content:center; padding-left:48px; border-left:1px solid var(--line);">
+      <div><div class="stat-num">1</div><div class="stat-label">codebase — domain logic shared by every UI</div></div>
+      <div><div class="stat-num">4</div><div class="stat-label">native design systems from one tree</div></div>
+      <div><div class="stat-num">0</div><div class="stat-label">app store reviews to ship an update</div></div>
+    </div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>02</span></div>
+</section>
+
+<!-- 3 · The app -->
+<section class="slide">
+  <div class="kicker">The demo app</div>
+  <h2>Streaks — the same app, four native looks</h2>
+  <p class="sub">The UI kit is chosen at runtime: detected for installed PWAs, forceable via <code>?design=…</code> for previews.</p>
+  <div style="display:flex; gap:22px; justify-content:center; margin-top:26px;">
+    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/cupertino-dark.png" alt="Cupertino" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Cupertino</b> · iOS / macOS</p></div>
+    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/material-dark.png" alt="Material" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Material</b> · Android / Linux</p></div>
+    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/web-dark.png" alt="Web" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Web kit</b> · browser tab</p></div>
+    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/cupertino-light.png" alt="Cupertino light" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Light &amp; dark</b> · every kit</p></div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>03</span></div>
+</section>
+
+<!-- 4 · Architecture -->
+<section class="slide">
+  <div class="kicker">Architecture</div>
+  <h2>One domain layer, swappable UI kits</h2>
+  <div class="cols" style="margin-top:28px; gap:36px; flex-direction:column;">
+    <div style="display:flex; gap:20px;">
+      <div class="box" style="flex:1.4;"><h3>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (80 tests).</p></div>
+      <div class="box" style="flex:1.4;"><h3>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design system (override → installed → web) and owns the install prompt store.</p></div>
+      <div class="box" style="flex:1;"><h3>PWA shell</h3><p>vite-plugin-pwa: manifest, auto-updating service worker, per-kit lazy chunks, offline precache.</p></div>
+    </div>
+    <div style="display:flex; justify-content:center;"><div style="width:2px; height:26px; background:var(--line);"></div></div>
+    <div style="display:flex; gap:20px;">
+      <div class="box" style="flex:1; border-color:var(--primary); background:var(--primary-soft);"><h3>Cupertino · Material</h3><p>Framework7 9 — one shell, two native languages (<code>theme="ios" / "md"</code>), F7 icons, swipe actions, FAB, system dialogs.</p></div>
+      <div class="box" style="flex:1;"><h3>Fluent</h3><p>@fluentui/react-components v9 — real Fluent widgets, CSS-in-JS design tokens, TabList navigation, dark theme from the OS.</p></div>
+      <div class="box" style="flex:1;"><h3>Web</h3><p>Own Flutter-style widget kit — inline styles from a single theme file (<code>theme.jsx</code>), no CSS frameworks at all.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>04</span></div>
+</section>
+
+<!-- 5 · Native checklist -->
+<section class="slide">
+  <div class="kicker">How it earns “native”</div>
+  <h2>Details that close the gap</h2>
+  <div class="cols" style="margin-top:30px; gap:56px;">
+    <div style="flex:1; display:flex; flex-direction:column; gap:24px;">
+      <div class="row"><div class="n">01</div><div><b>Installed-mode detection</b><span>display-mode queries + navigator.standalone switch the whole design system the moment the app leaves the browser tab.</span></div></div>
+      <div class="row"><div class="n">02</div><div><b>Real install flow</b><span>beforeinstallprompt is captured and re-fired; where the prompt is missing (iOS), per-browser instructions are shown.</span></div></div>
+      <div class="row"><div class="n">03</div><div><b>Offline by default</b><span>the service worker precaches the build — cold start works in airplane mode.</span></div></div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:24px;">
+      <div class="row"><div class="n">04</div><div><b>Platform widgets &amp; gestures</b><span>FAB and pill tabs on Android, circular checks and swipe-to-delete on iOS, TabList on Windows — from one component tree.</span></div></div>
+      <div class="row"><div class="n">05</div><div><b>Native chrome</b><span>safe-area insets for notches and home bars, system dark mode, per-platform typography and icon fonts.</span></div></div>
+      <div class="row"><div class="n">06</div><div><b>Lean bundles</b><span>each kit ships as a lazy chunk: a browser tab never downloads Framework7, an installed Android user never downloads Fluent.</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>05</span></div>
+</section>
+
+<!-- 6 · Comparison -->
+<section class="slide">
+  <div class="kicker">Position</div>
+  <h2>PWA vs native binary — what’s left on the table?</h2>
+  <table style="margin-top:28px;">
+    <tr><th></th><th>This experiment (PWA)</th><th>Native binary</th></tr>
+    <tr><td>Distribution</td><td class="win">A URL — no store, no review</td><td>App store submission &amp; review</td></tr>
+    <tr><td>Updates</td><td class="win">Instant, on next load (autoUpdate SW)</td><td>Release cycle + user update</td></tr>
+    <tr><td>UI quality</td><td class="win">Platform UI kits per OS</td><td>Platform UI kits</td></tr>
+    <tr><td>Offline</td><td class="win">Precached app shell + data</td><td>Full offline</td></tr>
+    <tr><td>Deep OS access</td><td>Moderate — web APIs only</td><td class="win">Full platform access</td></tr>
+    <tr><td>Codebase</td><td class="win">One for every platform</td><td>Per-platform (Swift/Kotlin/…)</td></tr>
+  </table>
+  <p class="sub" style="font-size:15px; margin-top:18px;">Honest scope: a PWA is not a replacement for apps that need deep OS integration — it is a serious answer for everything else.</p>
+  <div class="foot"><span>Native PWA Experiment</span><span>06</span></div>
+</section>
+
+<!-- 7 · Ecosystem -->
+<section class="slide">
+  <div class="kicker">Prior art &amp; ecosystem</div>
+  <h2>Not the first to bet on the web</h2>
+  <div style="margin-top:26px; display:flex; flex-direction:column;">
+    <div class="hairline"></div>
+    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">What PWA Can Do Today</b></div><span style="font-size:14.5px; color:var(--muted);">The capability catalog this experiment pairs with: what browsers support, per platform. <a class="link" href="https://whatpwacando.today/">whatpwacando.today</a></span></div>
+    <div class="hairline"></div>
+    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Excalidraw · Squoosh</b></div><span style="font-size:14.5px; color:var(--muted);">Flagship installable PWAs — app-grade UX fully in the browser, offline-capable.</span></div>
+    <div class="hairline"></div>
+    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Starbucks · Uber · X Lite</b></div><span style="font-size:14.5px; color:var(--muted);">Production PWAs at scale — lighter, faster to market, near-parity with their native apps.</span></div>
+    <div class="hairline"></div>
+    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Framework7 · Fluent UI</b></div><span style="font-size:14.5px; color:var(--muted);">The kits that make platform-native looks possible from web code.</span></div>
+    <div class="hairline"></div>
+    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">web.dev/learn/pwa · PWA Stats</b></div><span style="font-size:14.5px; color:var(--muted);">Reference learning path and outcome statistics from the field.</span></div>
+    <div class="hairline"></div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>07</span></div>
+</section>
+
+<!-- 8 · Run it -->
+<section class="slide">
+  <div class="kicker">Repository</div>
+  <h2>Run it in a minute</h2>
+  <div class="cols" style="margin-top:28px; gap:48px;">
+    <div style="flex:1;">
+      <div class="box" style="font-family:'SF Mono', ui-monospace, Menlo, monospace; font-size:15px; line-height:2.1; color:#cfe0ff;">
+        git clone https://github.com/nikitafedorov008/NativePWAExperiment<br/>
+        cd NativePWAExperiment<br/>
+        npm install<br/>
+        npm run dev &nbsp;&nbsp;<span style="color:var(--muted)"># http://localhost:5173</span><br/>
+        npm run build &nbsp;<span style="color:var(--muted)"># static dist/ — host anywhere</span><br/>
+        npm test &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--muted)"># 80 unit tests</span>
+      </div>
+      <p class="sub" style="font-size:15px; margin-top:18px;">Open it in a browser tab for the web look — then install it and watch the UI switch to your platform’s native kit.</p>
+    </div>
+    <div style="flex:1;">
+      <div class="box" style="font-family:'SF Mono', ui-monospace, Menlo, monospace; font-size:13.5px; line-height:1.9; color:var(--muted);">
+        src/<br/>
+        ├─ <b style="color:var(--text)">domain/</b> habits · celebration <span style="opacity:.7">— pure logic + tests</span><br/>
+        ├─ <b style="color:var(--text)">platform/</b> detection · install store<br/>
+        ├─ <b style="color:var(--text)">app/</b> adaptive switcher<br/>
+        └─ <b style="color:var(--text)">ui/</b><br/>
+        &nbsp;&nbsp;&nbsp;├─ f7/ + cupertino/ + material/<br/>
+        &nbsp;&nbsp;&nbsp;├─ fluent/<br/>
+        &nbsp;&nbsp;&nbsp;├─ web/ <span style="opacity:.7">— code-styled kit + theme</span><br/>
+        &nbsp;&nbsp;&nbsp;└─ appStyles.js <span style="opacity:.7">— all custom CSS in one file</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Native PWA Experiment</span><span>08</span></div>
+</section>
+
+<!-- 9 · Closing -->
+<section class="slide">
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+    <div class="kicker">Try it yourself</div>
+    <h1 style="font-size:56px;">Judge it on your<br/>own phone.</h1>
+    <div style="display:flex; gap:56px; margin-top:44px;">
+      <div class="row"><div class="n">1</div><div><b>Open the URL</b><span>in Safari or Chrome</span></div></div>
+      <div class="row"><div class="n">2</div><div><b>Tap Install</b><span>from the banner or browser menu</span></div></div>
+      <div class="row"><div class="n">3</div><div><b>Launch it</b><span>the native UI of your platform greets you</span></div></div>
+    </div>
+    <p style="margin-top:52px; font-size:19px;"><span class="link">github.com/nikitafedorov008/NativePWAExperiment</span></p>
+  </div>
+  <div class="foot"><span>Native PWA Experiment · MIT</span><span>09</span></div>
+</section>
+
+</body>
+</html>

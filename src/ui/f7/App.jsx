@@ -1,3 +1,9 @@
+/**
+ * Shared Framework7 shell for the Cupertino and Material designs. Framework7
+ * renders the same component tree in an iOS or Material language depending on
+ * the `theme` prop, so one implementation here covers both native looks.
+ * Screens live in ./screens, custom widget styles in ../appStyles.js.
+ */
 import { useCallback, useState } from 'react';
 import {
   App,
@@ -11,11 +17,13 @@ import {
   View,
 } from 'framework7-react';
 import { useHabits } from '@/domain/habits/HabitsContext.jsx';
+import { injectAppStyles } from '../appStyles.js';
 import HabitFormPopup from './screens/HabitFormPopup.jsx';
 import TodayScreen from './screens/Today.jsx';
 import StatsScreen from './screens/Stats.jsx';
 import SettingsScreen from './screens/Settings.jsx';
-import './habits.css';
+
+injectAppStyles();
 
 const TABS = [
   { id: 'today', title: 'Today', iconIos: 'f7:checkmark_seal_fill', iconMaterial: 'today' },

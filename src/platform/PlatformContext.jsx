@@ -1,3 +1,11 @@
+/**
+ * Platform layer: detects the environment once at boot (OS, browser, display
+ * mode, install status) and resolves which design system to render — an
+ * explicit override from ?design=… / localStorage wins, otherwise installed
+ * PWAs get their native kit (Cupertino on iOS/macOS, Material on Android,
+ * Fluent on Windows) and plain browser tabs get the web UI. Live media
+ * queries keep display mode and color scheme up to date while running.
+ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   DESIGN_SYSTEMS,

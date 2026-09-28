@@ -1,94 +1,62 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
 import { useHabits } from '@/domain/habits/HabitsContext.jsx';
 import { DESIGN_OPTIONS } from '@/platform/detect.js';
 import { usePlatform } from '@/platform/PlatformContext.jsx';
-import { Button } from '@/ui/web/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui/web/components/ui/card';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/ui/web/components/ui/dialog';
-import { Label } from '@/ui/web/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/ui/web/components/ui/radio-group';
-import { Separator } from '@/ui/web/components/ui/separator';
+import { useInstallPrompt } from '@/platform/useInstallPrompt.js';
+import { useTheme } from '../theme.jsx';
+import { Button, Card, Dialog, ListTile, Radio, Text } from '../widgets.jsx';
 
-function InfoRows({ rows }) {
+function SectionCard({ title, subtitle, children }) {
   return (
-    <dl>
-      {rows.map(([label, value], index) => (
-        <Fragment key={label}>
-          {index > 0 && <Separator />}
-          <div className="flex items-center justify-between gap-4 py-3 text-sm">
-            <dt className="text-muted-foreground">{label}</dt>
-            <dd className="font-medium">{value}</dd>
-          </div>
-        </Fragment>
-      ))}
-    </dl>
+    <Card style={{ gap: 8 }}>
+      <div>
+        <Text variant="headline" style={{ display: 'block' }}>{title}</Text>
+        {subtitle && <Text variant="caption" style={{ display: 'block' }}>{subtitle}</Text>}
+      </div>
+      {children}
+    </Card>
   );
 }
 
-function DesignPreview() {
-  const { override, setOverride } = usePlatform();
+function InstallSection() {
+  const t = useTheme();
+  const { canPrompt, promptInstall, outcome, instructions } = useInstallPrompt();
+  const { installed } = usePlatform();
+
+  if (installed) {
+    return (
+      <SectionCard title="Install app" subtitle="Already installed — you are using the native look." />
+    );
+  }
   return (
-    <RadioGroup value={override ?? 'auto'} onValueChange={(value) => setOverride(value === 'auto' ? null : value)}>
-      {DESIGN_OPTIONS.map((option) => {
-        const value = option.value ?? 'auto';
-        const id = `design-${value}`;
-        return (
-          <div key={value} className="flex items-center gap-3">
-            <RadioGroupItem value={value} id={id} />
-            <Label htmlFor={id} className="font-normal">
-              {option.label}
-            </Label>
-          </div>
-        );
-      })}
-    </RadioGroup>
+    <SectionCard title="Install app" subtitle="Get the native look for your platform.">
+      {outcome === 'accepted' ? (
+        <Text variant="body" style={{ fontWeight: 550 }}>
+          Installed — open Streaks from your home screen / dock.
+        </Text>
+      ) : canPrompt ? (
+        <Button icon={Download} onClick={() => promptInstall()}>Install app</Button>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Text variant="label">{instructions.title}</Text>
+          <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {instructions.steps.map((step) => (
+              <li key={step}><Text variant="caption" style={{ color: t.color.text2 }}>{step}</Text></li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </SectionCard>
   );
 }
 
-function ResetButton() {
+export default function Settings() {
+  const t = useTheme();
   const { resetAll } = useHabits();
-  const [open, setOpen] = useState(false);
-  const confirm = () => {
-    resetAll();
-    setOpen(false);
-  };
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="destructive" onClick={() => setOpen(true)}>
-        <RotateCcw />
-        Reset data
-      </Button>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Reset all data?</DialogTitle>
-          <DialogDescription>
-            Your habits and completions will be deleted and replaced with the four demo habits.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" onClick={confirm}>
-            Reset
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+  const { os, browser, displayMode, designSystem, installed, override, setOverride } = usePlatform();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-export default function Settings({ onInstall }) {
-  const { os, browser, displayMode, designSystem, installed } = usePlatform();
   const rows = [
     ['Platform', os],
     ['Browser', browser],
@@ -98,62 +66,70 @@ export default function Settings({ onInstall }) {
   ];
 
   return (
-    <section className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+    <>
+      <SectionCard title="Platform" subtitle="What the app detected at start">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {rows.map(([label, value], index) => (
+            <div key={label}>
+              {index > 0 && <div style={{ height: 1, background: t.color.divider }} />}
+              <ListTile title={label} trailing={<Text variant="body" style={{ fontWeight: 550 }}>{String(value)}</Text>} />
+            </div>
+          ))}
+        </div>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Platform</CardTitle>
-          <CardDescription>What the app detected at start</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <InfoRows rows={rows} />
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Design system preview"
+        subtitle="Force a UI kit to preview it in this tab. Changing it reloads the page."
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {DESIGN_OPTIONS.map((option) => {
+            const value = option.value ?? 'auto';
+            return (
+              <Radio
+                key={value}
+                label={option.label}
+                checked={(override ?? 'auto') === value}
+                onChange={() => setOverride(option.value)}
+              />
+            );
+          })}
+        </div>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Design system preview</CardTitle>
-          <CardDescription>Force a UI kit to preview it in this tab. Changing it reloads the page.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DesignPreview />
-        </CardContent>
-      </Card>
+      <InstallSection />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Install app</CardTitle>
-          <CardDescription>
-            {installed ? 'Already installed' : 'Get the native look for your platform.'}
-          </CardDescription>
-        </CardHeader>
-        {!installed && (
-          <CardContent>
-            <Button variant="outline" onClick={onInstall}>
-              <Download />
-              Show install instructions
+      <SectionCard title="Reset data" subtitle="Clear everything and restore the demo habits.">
+        <div>
+          <Button variant="danger" icon={RotateCcw} onClick={() => setConfirmOpen(true)}>
+            Reset data
+          </Button>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="About" subtitle="One domain layer, four looks — Cupertino, Material, Fluent, web kit." />
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Reset all data?"
+        actions={
+          <>
+            <Button variant="text" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                resetAll();
+                setConfirmOpen(false);
+              }}
+            >
+              Reset
             </Button>
-          </CardContent>
-        )}
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Reset data</CardTitle>
-          <CardDescription>Clear everything and restore the demo habits.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResetButton />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>About</CardTitle>
-          <CardDescription>One domain layer, four UIs — Cupertino, Material, Fluent, shadcn</CardDescription>
-        </CardHeader>
-      </Card>
-    </section>
+          </>
+        }
+      >
+        <Text variant="body">Your habits and completions will be deleted and replaced with the four demo habits.</Text>
+      </Dialog>
+    </>
   );
 }

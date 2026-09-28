@@ -1,3 +1,9 @@
+/**
+ * Pure detection helpers for the platform layer — no React, fully unit-tested.
+ * UA parsing is only a fallback: userAgentData.platform is preferred where
+ * available. installInstructions() powers the per-browser "how to install"
+ * steps shown when beforeinstallprompt is unavailable (iOS Safari etc.).
+ */
 export const DESIGN_SYSTEMS = ['web', 'cupertino', 'material', 'fluent'];
 
 export const DESIGN_OPTIONS = [

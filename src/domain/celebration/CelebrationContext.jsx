@@ -1,3 +1,8 @@
+/**
+ * Cross-cutting delight: a confetti canvas owned at the app root and shared by
+ * every UI kit. Domain code fires celebrate() without knowing which UI is
+ * mounted — one example of the domain layer staying UI-agnostic.
+ */
 import confetti from 'canvas-confetti';
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 

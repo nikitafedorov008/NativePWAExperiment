@@ -1,5 +1,6 @@
 {
-  "name": "native-pwa-example",
+  "name": "native-pwa-experiment",
+  "description": "Proof of concept: a PWA that behaves like a native mobile/desktop app, including the UI",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -14,22 +15,15 @@
     "@fluentui/react-components": "^9.74",
     "@fluentui/react-icons": "^2",
     "canvas-confetti": "^1.9",
-    "class-variance-authority": "^0.7",
-    "clsx": "^2",
     "framework7": "^9.1",
     "framework7-icons": "^5",
     "framework7-react": "^9.1",
     "lucide-react": "^1.41",
     "material-icons": "^1.13",
-    "radix-ui": "^1",
     "react": "^18.3",
-    "react-dom": "^18.3",
-    "tailwind-merge": "^3",
-    "tailwindcss": "^4.3",
-    "tw-animate-css": "^1"
+    "react-dom": "^18.3"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3",
     "@vitejs/plugin-react": "^5.2",
     "sharp": "^0.35",
     "vite": "^7.3",

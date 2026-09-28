@@ -1,3 +1,13 @@
+/**
+ * Domain layer: the single source of truth for habits, independent of any UI kit.
+ *
+ * State lives in a pure reducer (model.js) and is persisted to localStorage
+ * (storage.js) behind a versioned envelope; selectors (selectors.js) derive
+ * streaks and progress. Every UI implementation — Framework7, Fluent, the web
+ * kit — consumes this context and nothing else, which is what makes the four
+ * native looks possible without duplicating logic. `today` rolls over at
+ * midnight and on window focus, so long-lived installed PWAs stay correct.
+ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useCelebration } from '../celebration/CelebrationContext.jsx';
 import { formatDateKey, msUntilNextMidnight, todayKey } from './dates.js';

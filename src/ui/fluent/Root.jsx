@@ -1,3 +1,9 @@
+/**
+ * Fluent look (Windows): built on @fluentui/react-components v9. Fluent's
+ * styling is CSS-in-JS driven by design tokens, so light/dark follows
+ * prefersDark and needs no separate stylesheet; custom widget styles come
+ * from the shared appStyles.js injector.
+ */
 import { useState } from 'react';
 import {
   FluentProvider,
@@ -9,10 +15,12 @@ import {
 } from '@fluentui/react-components';
 import { CalendarCheckmarkRegular, DataUsageRegular, SettingsRegular } from '@fluentui/react-icons';
 import { usePlatform } from '@/platform/PlatformContext.jsx';
+import { injectAppStyles } from '../appStyles.js';
 import TodayScreen from './screens/Today.jsx';
 import StatsScreen from './screens/Stats.jsx';
 import SettingsScreen from './screens/Settings.jsx';
-import './fluent.css';
+
+injectAppStyles();
 
 export default function Root() {
   const { prefersDark } = usePlatform();

@@ -1,67 +1,73 @@
 import { useHabits } from '@/domain/habits/HabitsContext.jsx';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui/web/components/ui/card';
-import WeekStrip from '../components/WeekStrip.jsx';
+import WeekDots from '../components/WeekDots.jsx';
+import { useTheme } from '../theme.jsx';
+import { Card, Text } from '../widgets.jsx';
 
-function Tile({ label, value }) {
+const bestStreakLabel = (best) => (best ? `${best.emoji} ${best.name} · ${best.bestStreak} days` : '—');
+
+function StatTile({ label, value }) {
   return (
-    <Card className="gap-2 py-5">
-      <CardHeader className="px-5">
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="truncate text-2xl tabular-nums">{value}</CardTitle>
-      </CardHeader>
+    <Card style={{ gap: 3, padding: 14 }}>
+      <Text variant="caption">{label}</Text>
+      <Text variant="headline" style={{ fontSize: 19, fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {value}
+      </Text>
     </Card>
   );
 }
 
-const bestStreakLabel = (best) => (best ? `${best.emoji} ${best.name} · ${best.bestStreak} days` : '—');
-
 export default function Stats() {
+  const t = useTheme();
   const { habits, overall, statsFor } = useHabits();
-  return (
-    <section className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Stats</h1>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Tile label="Total completions" value={overall.totalCompletions} />
-        <Tile label="Best streak" value={bestStreakLabel(overall.bestStreakHabit)} />
-        <Tile label="Perfect days (7d)" value={overall.perfectDays7} />
-        <Tile label="Completion rate (7d)" value={`${Math.round(overall.completionRate7 * 100)}%`} />
+  const tiles = [
+    { label: 'Total completions', value: overall.totalCompletions },
+    { label: 'Best streak', value: bestStreakLabel(overall.bestStreakHabit) },
+    { label: 'Perfect days (7d)', value: overall.perfectDays7 },
+    { label: 'Completion rate (7d)', value: `${Math.round(overall.completionRate7 * 100)}%` },
+  ];
+
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        {tiles.map((tile) => (
+          <StatTile key={tile.label} label={tile.label} value={tile.value} />
+        ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Habits</CardTitle>
-          <CardDescription>Streaks and the last 7 days</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {habits.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">No habits yet.</p>
-          ) : (
-            <ul className="divide-y">
-              {habits.map((habit) => {
-                const stats = statsFor(habit.id);
-                if (!stats) return null;
-                return (
-                  <li key={habit.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl leading-none" aria-hidden="true">
-                        {habit.emoji}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{habit.name}</p>
-                        <p className="text-sm text-muted-foreground tabular-nums">
-                          🔥 {stats.currentStreak} current · {stats.bestStreak} best · {stats.doneCount} done
-                        </p>
-                      </div>
-                    </div>
-                    <WeekStrip days={stats.weekStrip} className="pl-9" />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </CardContent>
+      <Card style={{ padding: '4px 16px' }}>
+        <div style={{ padding: '12px 4px 4px' }}>
+          <Text variant="headline">Habits</Text>
+          <Text variant="caption" style={{ display: 'block' }}>Streaks and the last 7 days</Text>
+        </div>
+        {habits.length === 0 ? (
+          <Text variant="body" style={{ textAlign: 'center', padding: '20px 0', opacity: 0.55 }}>No habits yet.</Text>
+        ) : (
+          habits.map((habit, index) => {
+            const stats = statsFor(habit.id);
+            if (!stats) return null;
+            return (
+              <div key={habit.id} style={{ padding: '12px 4px' }}>
+                {index > 0 && <div style={{ height: 1, background: t.color.divider, marginBottom: 12 }} />}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{habit.emoji}</span>
+                    <Text variant="body" style={{ fontWeight: 550, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {habit.name}
+                    </Text>
+                  </div>
+                  <div style={{ paddingLeft: 34 }}>
+                    <Text variant="caption" style={{ display: 'block', marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
+                      🔥 {stats.currentStreak} current · {stats.bestStreak} best · {stats.doneCount} done
+                    </Text>
+                    <WeekDots days={stats.weekStrip} />
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </Card>
-    </section>
+    </>
   );
 }
