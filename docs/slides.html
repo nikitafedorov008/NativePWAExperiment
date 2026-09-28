@@ -11,10 +11,6 @@
   }
   @page { size: 1280px 720px; margin: 0; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
-  @media screen {
-    html { height: auto; display: flex; justify-content: center; }
-    body { transform-origin: top center; scale: min(1, calc(100vw / 1280)); margin: 0 auto; }
-  }
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; color: var(--text); }
 
@@ -34,11 +30,37 @@
   .sub { font-size: 21px; color: var(--muted); line-height: 1.5; margin-top: 14px; }
   .cols { display: flex; gap: 48px; flex: 1; margin-top: 8px; min-height: 0; }
 
+  .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none;
+        stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+  /* ---- phone mockup frame ---- */
   .phone {
-    border-radius: 26px; border: 1px solid var(--line); background: #000;
-    overflow: hidden; flex-shrink: 0; box-shadow: 0 22px 60px rgba(0,0,0,.5);
+    position: relative; border-radius: 30px; flex-shrink: 0;
+    border: 6px solid #04060b; outline: 1px solid #2a3342;
+    background: #000; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.55);
+    display: flex; flex-direction: column;
   }
-  .phone img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .phone .shot { flex: 1; min-height: 0; width: 100%; object-fit: cover; display: block; }
+  .phone .statuszone, .phone .bottomzone {
+    position: relative; flex-shrink: 0; display: flex; align-items: center;
+    background: var(--sz, #000);
+  }
+  .phone .statuszone { height: 30px; justify-content: space-between; padding: 0 16px;
+    color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; }
+  .phone .statuszone svg { height: 9px; width: auto; display: block; }
+  .phone .statuszone .sicons { display: flex; gap: 4px; align-items: center; }
+  .phone .island {
+    position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+    width: 64px; height: 17px; border-radius: 12px; background: #000;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
+  }
+  .phone .bottomzone { height: 22px; justify-content: center; }
+  .phone .homebar {
+    width: 84px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.92);
+  }
+  .phone--light .statuszone { color: #10131a; background: var(--sz, #fff); }
+  .phone--light .homebar { background: rgba(10,14,22,.8); }
 
   .stat-num { font-size: 84px; font-weight: 800; color: var(--primary); line-height: 1; letter-spacing: -0.02em; }
   .stat-label { font-size: 16px; color: var(--muted); margin-top: 6px; }
@@ -46,15 +68,16 @@
 
   .row { display: flex; gap: 18px; align-items: flex-start; }
   .row .n {
-    width: 34px; height: 34px; border-radius: 10px; background: var(--primary-soft);
-    color: var(--primary); font-weight: 800; font-size: 16px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 12px; background: var(--primary-soft);
+    color: var(--primary); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
   .row b { font-size: 18px; display: block; }
   .row span { font-size: 14.5px; color: var(--muted); line-height: 1.45; display: block; margin-top: 2px; }
 
   .box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
-  .box h3 { margin: 0 0 4px; font-size: 17px; }
+  .box h3 { margin: 0 0 4px; font-size: 17px; display: flex; align-items: center; gap: 9px; }
+  .box h3 .ic { width: 18px; height: 18px; color: var(--primary); }
   .box p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
   .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
 
@@ -72,9 +95,35 @@
     background: var(--surface2); border: 1px solid var(--line); border-radius: 8px;
     padding: 2px 8px; color: #cfe0ff;
   }
+  .cap { text-align: center; color: var(--muted); font-size: 14px; margin: 12px 0 0; }
+  .cap b { color: var(--text); }
 </style>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13.5l9 5 9-5"/><path d="M3 18l9 5 9-5" opacity=".45"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.8"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4.5 13.5h6L9.5 22 18 10.5h-6L13 2z"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="10" rx="2"/><path d="M6.5 18h5"/><rect x="17.5" y="9" width="4.5" height="11" rx="1.5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11"/><path d="M6.5 9.5L12 15l5.5-5.5"/><path d="M4.5 20.5h15"/></symbol>
+    <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M8.5 18.5H17a4 4 0 00.9-7.9 6 6 0 00-9.6-2.4"/><path d="M6.8 10.6A4.5 4.5 0 007 18.5"/><path d="M3 3l18 18"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11 5l1.3 3.7L16 10l-3.7 1.3L11 15l-1.3-3.7L6 10l3.7-1.3L11 5z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/><path d="M5.5 15.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6.6-1.6z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14A8.5 8.5 0 1110 4a7 7 0 0010 10z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 2.8v5.4c0 4.8-3.4 7.8-7 9.8-3.6-2-7-5-7-9.8V5.8L12 3z"/><path d="M9.3 12l2 2 3.4-4"/></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7.5L20 11"/><path d="M6 9.8V20h12V9.8"/><path d="M10 20v-5.5h4V20"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.3-5.6"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 010 18 14 14 0 010-18z"/></symbol>
+    <symbol id="i-check-badge" viewBox="0 0 24 24"><path d="M12 2.5l2.4 1.8 3-.3 1 2.8 2.6 1.5-.7 2.9.7 2.9-2.6 1.5-1 2.8-3-.3L12 21.5l-2.4-1.8-3 .3-1-2.8L3 15.7l.7-2.9L3 9.9l2.6-1.5 1-2.8 3 .3L12 2.5z"/><path d="M9.2 12l2 2 3.6-4.2"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M4 9.5a12 12 0 0116 0"/><path d="M7 13a8 8 0 0110 0"/><path d="M10 16.5a4 4 0 014 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2" y="8" width="17" height="8" rx="2"/><path d="M21.5 11v2"/><rect x="4" y="10" width="10" height="4" rx="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-signal" viewBox="0 0 24 24"><path d="M4 18v-3M9 18v-6M14 18v-9M19 18V6"/></symbol>
+  </defs>
+</svg>
 
 <!-- 1 · Title -->
 <section class="slide">
@@ -86,8 +135,8 @@
       <p style="margin-top:26px;"><span class="tag">Installable</span>&nbsp;<span class="tag">Offline</span>&nbsp;<span class="tag">Per-platform native UI</span></p>
     </div>
     <div style="position:relative; flex:1; height:100%;">
-      <div class="phone" style="position:absolute; width:252px; height:425px; right:200px; top:60px; transform:rotate(-5deg);"><img src="assets/cupertino-dark.png" alt="Cupertino UI" /></div>
-      <div class="phone" style="position:absolute; width:252px; height:425px; right:20px; top:96px; transform:rotate(4deg);"><img src="assets/material-dark.png" alt="Material UI" /></div>
+      <div class="phone" style="position:absolute; width:258px; height:488px; right:200px; top:26px; transform:rotate(-5deg); --sz:#000000;"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
+      <div class="phone" style="position:absolute; width:258px; height:488px; right:16px; top:66px; transform:rotate(4deg); --sz:#111318;"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material UI" /><div class="bottomzone"><div class="homebar"></div></div></div>
     </div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>github.com/nikitafedorov008</span></div>
@@ -96,12 +145,12 @@
 <!-- 2 · Idea -->
 <section class="slide">
   <div class="kicker">The idea</div>
-  <h2 style="max-width:980px;">whatpwacando.today catalogs what the web <em>can</em> do.<br/>This experiment shows how it can <span style="color:var(--primary)">feel</span>.</h2>
-  <div class="cols" style="margin-top:40px; align-items:stretch;">
+  <h2 style="max-width:1020px;">whatpwacando.today catalogs what the web <em>can</em> do.<br/>This experiment shows how it can <span style="color:var(--primary)">feel</span>.</h2>
+  <div class="cols" style="margin-top:38px; align-items:stretch;">
     <div style="flex:1; display:flex; flex-direction:column; gap:26px; justify-content:center;">
-      <div class="row"><div class="n">1</div><div><b>One synthetic app</b><span>“Streaks”, a daily habit tracker — small enough to read, real enough to judge.</span></div></div>
-      <div class="row"><div class="n">2</div><div><b>Native UI per platform</b><span>Cupertino on iOS &amp; macOS, Material on Android &amp; Linux, Fluent on Windows.</span></div></div>
-      <div class="row"><div class="n">3</div><div><b>Judged like a native app</b><span>Install flow, offline start, dark mode, safe areas, platform widgets and gestures.</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-grid"/></svg></div><div><b>One synthetic app</b><span>“Streaks”, a daily habit tracker — small enough to read, real enough to judge.</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-layers"/></svg></div><div><b>Native UI per platform</b><span>Cupertino on iOS &amp; macOS, Material on Android &amp; Linux, Fluent on Windows.</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-zap"/></svg></div><div><b>Judged like a native app</b><span>Install flow, offline start, dark mode, safe areas, platform widgets and gestures.</span></div></div>
     </div>
     <div style="width:420px; display:flex; flex-direction:column; gap:22px; justify-content:center; padding-left:48px; border-left:1px solid var(--line);">
       <div><div class="stat-num">1</div><div class="stat-label">codebase — domain logic shared by every UI</div></div>
@@ -117,11 +166,11 @@
   <div class="kicker">The demo app</div>
   <h2>Streaks — the same app, four native looks</h2>
   <p class="sub">The UI kit is chosen at runtime: detected for installed PWAs, forceable via <code>?design=…</code> for previews.</p>
-  <div style="display:flex; gap:22px; justify-content:center; margin-top:26px;">
-    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/cupertino-dark.png" alt="Cupertino" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Cupertino</b> · iOS / macOS</p></div>
-    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/material-dark.png" alt="Material" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Material</b> · Android / Linux</p></div>
-    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/web-dark.png" alt="Web" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Web kit</b> · browser tab</p></div>
-    <div><div class="phone" style="width:236px; height:398px;"><img src="assets/cupertino-light.png" alt="Cupertino light" /></div><p style="text-align:center; color:var(--muted); font-size:14px; margin:12px 0 0;"><b style="color:var(--text)">Light &amp; dark</b> · every kit</p></div>
+  <div style="display:flex; gap:24px; justify-content:center; margin-top:24px;">
+    <div><div class="phone" style="width:238px; height:386px; --sz:#000000"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-dark.png" alt="Cupertino" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Cupertino</b> · iOS / macOS</p></div>
+    <div><div class="phone" style="width:238px; height:386px; --sz:#111318"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/material-dark.png" alt="Material" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Material</b> · Android / Linux</p></div>
+    <div><div class="phone" style="width:238px; height:386px; --sz:#0a0a0a"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/web-dark.png" alt="Web" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Web kit</b> · browser tab</p></div>
+    <div><div class="phone phone--light" style="width:238px; height:386px; --sz:#fbfbfd"><div class="statuszone"><span>9:41</span><span class="island"></span><span class="sicons"><svg class="ic" style="height:9px"><use href="#i-signal"/></svg><svg class="ic" style="height:9px"><use href="#i-wifi"/></svg><svg class="ic" style="height:10px"><use href="#i-battery"/></svg></span></div><img class="shot" src="assets/cupertino-light.png" alt="Cupertino light" /><div class="bottomzone"><div class="homebar"></div></div></div><p class="cap"><b>Light &amp; dark</b> · every kit</p></div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>03</span></div>
 </section>
@@ -130,13 +179,13 @@
 <section class="slide">
   <div class="kicker">Architecture</div>
   <h2>One domain layer, swappable UI kits</h2>
-  <div class="cols" style="margin-top:28px; gap:36px; flex-direction:column;">
+  <div style="margin-top:26px; display:flex; flex-direction:column; gap:0;">
     <div style="display:flex; gap:20px;">
-      <div class="box" style="flex:1.4;"><h3>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (80 tests).</p></div>
-      <div class="box" style="flex:1.4;"><h3>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design system (override → installed → web) and owns the install prompt store.</p></div>
-      <div class="box" style="flex:1;"><h3>PWA shell</h3><p>vite-plugin-pwa: manifest, auto-updating service worker, per-kit lazy chunks, offline precache.</p></div>
+      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-db"/></svg>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (80 tests).</p></div>
+      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-compass"/></svg>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design system (override → installed → web) and owns the install prompt store.</p></div>
+      <div class="box" style="flex:1;"><h3><svg class="ic"><use href="#i-globe"/></svg>PWA shell</h3><p>vite-plugin-pwa: manifest, auto-updating service worker, per-kit lazy chunks, offline precache.</p></div>
     </div>
-    <div style="display:flex; justify-content:center;"><div style="width:2px; height:26px; background:var(--line);"></div></div>
+    <div style="display:flex; justify-content:center; padding:10px 0;"><svg class="ic" style="color:var(--muted); transform:rotate(90deg);"><use href="#i-download"/></svg></div>
     <div style="display:flex; gap:20px;">
       <div class="box" style="flex:1; border-color:var(--primary); background:var(--primary-soft);"><h3>Cupertino · Material</h3><p>Framework7 9 — one shell, two native languages (<code>theme="ios" / "md"</code>), F7 icons, swipe actions, FAB, system dialogs.</p></div>
       <div class="box" style="flex:1;"><h3>Fluent</h3><p>@fluentui/react-components v9 — real Fluent widgets, CSS-in-JS design tokens, TabList navigation, dark theme from the OS.</p></div>
@@ -146,21 +195,17 @@
   <div class="foot"><span>Native PWA Experiment</span><span>04</span></div>
 </section>
 
-<!-- 5 · Native checklist -->
+<!-- 5 · Native functionality -->
 <section class="slide">
-  <div class="kicker">How it earns “native”</div>
-  <h2>Details that close the gap</h2>
-  <div class="cols" style="margin-top:30px; gap:56px;">
-    <div style="flex:1; display:flex; flex-direction:column; gap:24px;">
-      <div class="row"><div class="n">01</div><div><b>Installed-mode detection</b><span>display-mode queries + navigator.standalone switch the whole design system the moment the app leaves the browser tab.</span></div></div>
-      <div class="row"><div class="n">02</div><div><b>Real install flow</b><span>beforeinstallprompt is captured and re-fired; where the prompt is missing (iOS), per-browser instructions are shown.</span></div></div>
-      <div class="row"><div class="n">03</div><div><b>Offline by default</b><span>the service worker precaches the build — cold start works in airplane mode.</span></div></div>
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:24px;">
-      <div class="row"><div class="n">04</div><div><b>Platform widgets &amp; gestures</b><span>FAB and pill tabs on Android, circular checks and swipe-to-delete on iOS, TabList on Windows — from one component tree.</span></div></div>
-      <div class="row"><div class="n">05</div><div><b>Native chrome</b><span>safe-area insets for notches and home bars, system dark mode, per-platform typography and icon fonts.</span></div></div>
-      <div class="row"><div class="n">06</div><div><b>Lean bundles</b><span>each kit ships as a lazy chunk: a browser tab never downloads Framework7, an installed Android user never downloads Fluent.</span></div></div>
-    </div>
+  <div class="kicker">It behaves like an app, not a page</div>
+  <h2>Native functionality you can demo today</h2>
+  <div style="margin-top:26px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-home"/></svg></div><h3 style="margin:0 0 4px;">Installs like an app</h3><p>Own icon on the home screen or dock, opens in a standalone window — no browser chrome, no store.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-cloud-off"/></svg></div><h3 style="margin:0 0 4px;">Works offline</h3><p>Service worker precaches the whole build — flip on airplane mode and cold-start it.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-layers"/></svg></div><h3 style="margin:0 0 4px;">Platform widgets &amp; gestures</h3><p>FAB and pill tabs on Android, circular checks and swipe-to-delete on iOS, TabList on Windows.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-sparkles"/></svg></div><h3 style="margin:0 0 4px;">System-feel interactions</h3><p>Tap-to-complete, per-day toggling, native-style dialogs and confirmations, confetti on a perfect day.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-moon"/></svg></div><h3 style="margin:0 0 4px;">Follows the system</h3><p>Dark and light themes, safe-area insets for notches and home bars, locale-aware dates.</p></div>
+    <div class="box"><div class="n" style="width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:12px;"><svg class="ic"><use href="#i-refresh"/></svg></div><h3 style="margin:0 0 4px;">Zero-friction updates</h3><p>The auto-updating service worker ships the next version on the next launch — no review queue.</p></div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>05</span></div>
 </section>
@@ -188,15 +233,15 @@
   <h2>Not the first to bet on the web</h2>
   <div style="margin-top:26px; display:flex; flex-direction:column;">
     <div class="hairline"></div>
-    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">What PWA Can Do Today</b></div><span style="font-size:14.5px; color:var(--muted);">The capability catalog this experiment pairs with: what browsers support, per platform. <a class="link" href="https://whatpwacando.today/">whatpwacando.today</a></span></div>
+    <div class="row" style="padding:14px 0;"><div class="n" style="background:transparent;"><svg class="ic"><use href="#i-check-badge"/></svg></div><div><b style="font-size:17px;">What PWA Can Do Today</b><span>The capability catalog this experiment pairs with: what browsers support, per platform — <a class="link" href="https://whatpwacando.today/">whatpwacando.today</a></span></div></div>
     <div class="hairline"></div>
-    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Excalidraw · Squoosh</b></div><span style="font-size:14.5px; color:var(--muted);">Flagship installable PWAs — app-grade UX fully in the browser, offline-capable.</span></div>
+    <div class="row" style="padding:14px 0;"><div class="n" style="background:transparent;"><svg class="ic"><use href="#i-zap"/></svg></div><div><b style="font-size:17px;">Excalidraw · Squoosh</b><span>Flagship installable PWAs — app-grade UX fully in the browser, offline-capable.</span></div></div>
     <div class="hairline"></div>
-    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Starbucks · Uber · X Lite</b></div><span style="font-size:14.5px; color:var(--muted);">Production PWAs at scale — lighter, faster to market, near-parity with their native apps.</span></div>
+    <div class="row" style="padding:14px 0;"><div class="n" style="background:transparent;"><svg class="ic"><use href="#i-monitor"/></svg></div><div><b style="font-size:17px;">Starbucks · Uber · X Lite</b><span>Production PWAs at scale — lighter, faster to market, near-parity with their native apps.</span></div></div>
     <div class="hairline"></div>
-    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">Framework7 · Fluent UI</b></div><span style="font-size:14.5px; color:var(--muted);">The kits that make platform-native looks possible from web code.</span></div>
+    <div class="row" style="padding:14px 0;"><div class="n" style="background:transparent;"><svg class="ic"><use href="#i-package"/></svg></div><div><b style="font-size:17px;">Framework7 · Fluent UI</b><span>The kits that make platform-native looks possible from web code.</span></div></div>
     <div class="hairline"></div>
-    <div class="row" style="padding:14px 0;"><div style="width:270px; flex-shrink:0;"><b style="font-size:17px;">web.dev/learn/pwa · PWA Stats</b></div><span style="font-size:14.5px; color:var(--muted);">Reference learning path and outcome statistics from the field.</span></div>
+    <div class="row" style="padding:14px 0;"><div class="n" style="background:transparent;"><svg class="ic"><use href="#i-globe"/></svg></div><div><b style="font-size:17px;">web.dev/learn/pwa · PWA Stats</b><span>Reference learning path and outcome statistics from the field.</span></div></div>
     <div class="hairline"></div>
   </div>
   <div class="foot"><span>Native PWA Experiment</span><span>07</span></div>
@@ -241,9 +286,9 @@
     <div class="kicker">Try it yourself</div>
     <h1 style="font-size:56px;">Judge it on your<br/>own phone.</h1>
     <div style="display:flex; gap:56px; margin-top:44px;">
-      <div class="row"><div class="n">1</div><div><b>Open the URL</b><span>in Safari or Chrome</span></div></div>
-      <div class="row"><div class="n">2</div><div><b>Tap Install</b><span>from the banner or browser menu</span></div></div>
-      <div class="row"><div class="n">3</div><div><b>Launch it</b><span>the native UI of your platform greets you</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-globe"/></svg></div><div><b>Open the URL</b><span>in Safari or Chrome</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-download"/></svg></div><div><b>Tap Install</b><span>from the banner or browser menu</span></div></div>
+      <div class="row"><div class="n"><svg class="ic"><use href="#i-home"/></svg></div><div><b>Launch it</b><span>the native UI of your platform greets you</span></div></div>
     </div>
     <p style="margin-top:52px; font-size:19px;"><span class="link">github.com/nikitafedorov008/NativePWAExperiment</span></p>
   </div>
