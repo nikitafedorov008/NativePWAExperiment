@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
+import { useStore } from 'zustand';
 import { Download, RotateCcw } from 'lucide-react';
 import { useSettingsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Button, Card, Dialog, ListTile, Radio, Text } from '../../../widgets.tsx';
 
@@ -20,7 +20,8 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 function InstallSection() {
   const t = useTheme();
   const settings = useSettingsViewModel();
-  const { install } = useObservable(settings);
+  const { install } = useStore(settings);
+  const promptInstall = useStore(settings, (state) => state.promptInstall);
 
   if (install.installed) {
     return <SectionCard title="Install app" subtitle="Already installed — you are using the native look." />;
@@ -32,7 +33,7 @@ function InstallSection() {
           Installed — open Streaks from your home screen / dock.
         </Text>
       ) : install.canPrompt ? (
-        <Button icon={Download} onClick={settings.promptInstall}>Install app</Button>
+        <Button icon={Download} onClick={promptInstall}>Install app</Button>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <Text variant="label">{install.instructions.title}</Text>
@@ -50,7 +51,11 @@ function InstallSection() {
 export default function Settings() {
   const t = useTheme();
   const settings = useSettingsViewModel();
-  const { rows, design, resetOpen } = useObservable(settings);
+  const { rows, design, resetOpen } = useStore(settings);
+  const setDesign = useStore(settings, (state) => state.setDesign);
+  const requestReset = useStore(settings, (state) => state.requestReset);
+  const cancelReset = useStore(settings, (state) => state.cancelReset);
+  const confirmReset = useStore(settings, (state) => state.confirmReset);
 
   return (
     <>
@@ -77,7 +82,7 @@ export default function Settings() {
                 key={value}
                 label={option.label}
                 checked={(design.override ?? 'auto') === value}
-                onChange={() => settings.setDesign(option.value)}
+                onChange={() => setDesign(option.value)}
               />
             );
           })}
@@ -88,7 +93,7 @@ export default function Settings() {
 
       <SectionCard title="Reset data" subtitle="Clear everything and restore the demo habits.">
         <div>
-          <Button variant="danger" icon={RotateCcw} onClick={settings.requestReset}>
+          <Button variant="danger" icon={RotateCcw} onClick={requestReset}>
             Reset data
           </Button>
         </div>
@@ -98,12 +103,12 @@ export default function Settings() {
 
       <Dialog
         open={resetOpen}
-        onClose={settings.cancelReset}
+        onClose={cancelReset}
         title="Reset all data?"
         actions={
           <>
-            <Button variant="text" onClick={settings.cancelReset}>Cancel</Button>
-            <Button variant="danger" onClick={settings.confirmReset}>Reset</Button>
+            <Button variant="text" onClick={cancelReset}>Cancel</Button>
+            <Button variant="danger" onClick={confirmReset}>Reset</Button>
           </>
         }
       >

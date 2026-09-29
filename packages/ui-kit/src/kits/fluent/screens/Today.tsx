@@ -1,3 +1,4 @@
+import { useStore } from 'zustand';
 import {
   Badge,
   Button,
@@ -10,15 +11,18 @@ import {
 } from '@fluentui/react-components';
 import { AddRegular, DeleteRegular, EditRegular } from '@fluentui/react-icons';
 import { useInstallViewModel, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import HabitFormDialog from '../components/HabitFormDialog.tsx';
 import WeekDots from '../components/WeekDots.tsx';
 
 export default function TodayScreen() {
   const today = useTodayViewModel();
+  const { todayLabel, progress, items } = useStore(today);
+  const toggleToday = useStore(today, (state) => state.toggleToday);
+  const toggleDay = useStore(today, (state) => state.toggleDay);
+  const openEditor = useStore(today, (state) => state.openEditor);
+  const remove = useStore(today, (state) => state.remove);
   const install = useInstallViewModel();
-  const { todayLabel, progress, items } = useObservable(today);
-  const { visible } = useObservable(install);
+  const { visible } = useStore(install);
 
   return (
     <section className="fluent-screen">
@@ -27,12 +31,12 @@ export default function TodayScreen() {
           <Caption1 block>Today</Caption1>
           <Title2>{todayLabel}</Title2>
         </div>
-        <Button appearance="primary" icon={<AddRegular />} onClick={() => today.openEditor(null)}>
+        <Button appearance="primary" icon={<AddRegular />} onClick={() => openEditor(null)}>
           Add habit
         </Button>
       </header>
 
-      {visible && <InstallBannerSlot />}
+      {visible && <InstallBanner />}
 
       <Card>
         <div className="habit-row-main" style={{ justifyContent: 'space-between' }}>
@@ -54,7 +58,7 @@ export default function TodayScreen() {
                 <div className="habit-row-main">
                   <Checkbox
                     checked={item.doneToday}
-                    onChange={() => today.toggleToday(item.id)}
+                    onChange={() => toggleToday(item.id)}
                     aria-label={`${item.name}: done today`}
                   />
                   <span className="habit-emoji" aria-hidden="true">{item.emoji}</span>
@@ -62,7 +66,7 @@ export default function TodayScreen() {
                     type="button"
                     className="habit-name"
                     aria-label={`Rename ${item.name}`}
-                    onClick={() => today.openEditor(item.id)}
+                    onClick={() => openEditor(item.id)}
                   >
                     {item.name}
                   </button>
@@ -76,19 +80,19 @@ export default function TodayScreen() {
                     size="small"
                     icon={<EditRegular />}
                     aria-label={`Rename ${item.name}`}
-                    onClick={() => today.openEditor(item.id)}
+                    onClick={() => openEditor(item.id)}
                   />
                   <Button
                     appearance="subtle"
                     size="small"
                     icon={<DeleteRegular />}
                     aria-label={`Delete ${item.name}`}
-                    onClick={() => today.remove(item.id)}
+                    onClick={() => remove(item.id)}
                   />
                 </div>
                 <WeekDots
                   days={item.days}
-                  onToggle={(date) => today.toggleDay(item.id, date)}
+                  onToggle={(date) => toggleDay(item.id, date)}
                   className="habit-week-dots"
                 />
               </li>
@@ -102,18 +106,20 @@ export default function TodayScreen() {
   );
 }
 
-/** The install banner lives in the build via the shared app styles. */
-function InstallBannerSlot() {
+function InstallBanner() {
   const install = useInstallViewModel();
-  const state = useObservable(install);
+  const state = useStore(install);
+  const dismiss = useStore(install, (s) => s.dismiss);
+  const prompt = useStore(install, (s) => s.prompt);
+
   return (
     <Card>
       <div className="habit-row-main" style={{ justifyContent: 'space-between' }}>
         <Text weight="semibold">Install Streaks</Text>
-        <Button appearance="subtle" size="small" onClick={install.dismiss}>Dismiss</Button>
+        <Button appearance="subtle" size="small" onClick={dismiss}>Dismiss</Button>
       </div>
       {state.canPrompt ? (
-        <Button appearance="primary" onClick={install.prompt}>Install app</Button>
+        <Button appearance="primary" onClick={prompt}>Install app</Button>
       ) : (
         <div>
           <Text size={300} weight="semibold" block>{state.instructions.title}</Text>

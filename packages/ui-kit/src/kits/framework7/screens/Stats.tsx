@@ -1,10 +1,10 @@
+import { useStore } from 'zustand';
 import { Block, BlockTitle, List, ListItem } from 'framework7-react';
 import { useStatsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import WeekDots from '../components/WeekDots.tsx';
 
 export default function StatsScreen() {
-  const { tiles, items } = useObservable(useStatsViewModel());
+  const { tiles, items } = useStore(useStatsViewModel());
 
   return (
     <>

@@ -1,12 +1,12 @@
 /**
  * Code kit — custom / shadcn / yaru are drawn by the same widgets; the design
  * language only changes tokens and behavior inside theme.tsx. The shell is a
- * dumb view: navigation state is local, everything else comes from view models.
+ * dumb view: navigation state is local, everything else comes from the stores.
  */
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import { CalendarCheck, ChartColumn, Plus, Settings as SettingsIcon } from 'lucide-react';
 import { useTodayViewModel } from '../../context.ts';
-import { useObservable } from '../../hooks.ts';
 import { ThemeProvider, useTheme } from '../../theme.tsx';
 import { AppBar, Fab, NavigationBar, Scaffold } from '../../widgets.tsx';
 import type { NavItem } from '../../widgets.tsx';
@@ -26,10 +26,11 @@ const TITLES: Record<string, string> = { today: 'Today', stats: 'Stats', setting
 function Shell() {
   const t = useTheme();
   const today = useTodayViewModel();
-  const { todayLabel } = useObservable(today);
+  const { todayLabel } = useStore(today);
+  const openEditor = useStore(today, (state) => state.openEditor);
   const [screen, setScreen] = useState('today');
 
-  const openAdd = (): void => today.openEditor(null);
+  const openAdd = (): void => openEditor(null);
 
   return (
     <>

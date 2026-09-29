@@ -1,9 +1,10 @@
 /**
  * ui/settings/view_models — the Settings view model. It combines what the
- * device reports (design repository) with the install repository, and formats
- * the platform rows the views render.
+ * device reports (design repository) with the install repository, formats the
+ * platform rows the views render, and owns the reset-confirmation flag.
  */
-import { ChangeNotifier } from '../../../core/change_notifier.ts';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand';
 import { DESIGN_OPTIONS } from '@native-pwa-experiment/ui-kit/design-systems';
 import type { DesignSystem } from '@native-pwa-experiment/ui-kit/design-systems';
 import type { DesignLanguageRepository } from '../../../data/repositories/design_language_repository.ts';
@@ -21,55 +22,26 @@ export interface SettingsState {
   resetOpen: boolean;
 }
 
-export class SettingsViewModel extends ChangeNotifier {
-  #resetOpen = false;
-  #state: SettingsState;
+export interface SettingsActions {
+  setDesign(value: DesignSystem | null): void;
+  requestReset(): void;
+  cancelReset(): void;
+  confirmReset(): void;
+  dismissInstall(): void;
+  promptInstall(): void;
+}
 
-  constructor(
-    private readonly design: DesignLanguageRepository,
-    private readonly install: InstallRepository,
-    private readonly habits: HabitsRepository,
-  ) {
-    super();
-    this.#state = this.#compose();
-    this.design.addListener(() => this.#publish());
-    this.install.addListener(() => this.#publish());
-  }
+export type SettingsViewModel = StoreApi<SettingsState & SettingsActions>;
 
-  get state(): SettingsState {
-    return this.#state;
-  }
+export interface SettingsDeps {
+  design: DesignLanguageRepository;
+  install: InstallRepository;
+  habits: HabitsRepository;
+}
 
-  setDesign(value: DesignSystem | null): void {
-    this.design.setOverride(value);
-  }
-
-  requestReset(): void {
-    this.#resetOpen = true;
-    this.#publish();
-  }
-
-  cancelReset(): void {
-    this.#resetOpen = false;
-    this.#publish();
-  }
-
-  confirmReset(): void {
-    this.habits.reset();
-    this.#resetOpen = false;
-    this.#publish();
-  }
-
-  dismissInstall(): void {
-    this.install.dismiss();
-  }
-
-  promptInstall(): void {
-    void this.install.prompt();
-  }
-
-  #compose(): SettingsState {
-    const appearance = this.design.state;
+export function createSettingsViewModel({ design, install, habits }: SettingsDeps): SettingsViewModel {
+  const compose = (resetOpen: boolean): SettingsState => {
+    const appearance = design.store.getState();
     return {
       rows: [
         { label: 'Platform', value: appearance.os },
@@ -83,13 +55,26 @@ export class SettingsViewModel extends ChangeNotifier {
         override: appearance.override,
         options: [...DESIGN_OPTIONS],
       },
-      install: this.install.state,
-      resetOpen: this.#resetOpen,
+      install: install.store.getState(),
+      resetOpen,
     };
-  }
+  };
 
-  #publish(): void {
-    this.#state = this.#compose();
-    this.notifyListeners();
-  }
+  const store = createStore<SettingsState & SettingsActions>((set) => ({
+    ...compose(false),
+
+    setDesign: (value) => design.setOverride(value),
+    requestReset: () => set({ resetOpen: true }),
+    cancelReset: () => set({ resetOpen: false }),
+    confirmReset: () => {
+      habits.reset();
+      set({ resetOpen: false });
+    },
+    dismissInstall: () => install.dismiss(),
+    promptInstall: () => void install.prompt(),
+  }));
+
+  design.store.subscribe(() => store.setState(compose(store.getState().resetOpen)));
+  install.store.subscribe(() => store.setState(compose(store.getState().resetOpen)));
+  return store;
 }

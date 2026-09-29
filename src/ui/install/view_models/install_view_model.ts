@@ -1,26 +1,25 @@
 /**
- * ui/install/view_models — the install banner's view model. It only knows the
- * install repository, so the banner widget can stay identical in every design
- * language.
+ * ui/install/view_models — the install banner's view model: it mirrors the
+ * install repository's state and adds the two commands the banner and the
+ * settings screen share.
  */
-import { ChangeNotifier } from '../../../core/change_notifier.ts';
+import { createStore } from 'zustand/vanilla';
 import type { InstallRepository, InstallState } from '../../../data/repositories/install_repository.ts';
 
-export class InstallViewModel extends ChangeNotifier {
-  constructor(private readonly install: InstallRepository) {
-    super();
-    this.install.addListener(() => this.notifyListeners());
-  }
+export interface InstallActions {
+  dismiss(): void;
+  prompt(): void;
+}
 
-  get state(): InstallState {
-    return this.install.state;
-  }
+export type InstallViewModel = ReturnType<typeof createInstallViewModel>;
 
-  dismiss(): void {
-    this.install.dismiss();
-  }
+export function createInstallViewModel(install: InstallRepository) {
+  const store = createStore<InstallState & InstallActions>(() => ({
+    ...install.store.getState(),
+    dismiss: () => install.dismiss(),
+    prompt: () => void install.prompt(),
+  }));
 
-  prompt(): void {
-    void this.install.prompt();
-  }
+  install.store.subscribe((state) => store.setState(state));
+  return store;
 }

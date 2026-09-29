@@ -3,13 +3,13 @@
  * Framework7 renders one component tree in either native language depending on
  * the `theme` prop — the design languages' own names map to F7's theme ids in
  * ./cupertino.tsx and ./material.tsx, so nothing else in the app sees them.
- * Views read view models; the shell itself only owns which tab is open.
+ * Views read zustand stores; the shell itself only owns which tab is open.
  */
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import { App, Fab, Icon, Link, Navbar, NavRight, Page, Toolbar, View } from 'framework7-react';
 import { injectAppStyles } from '../../appStyles.ts';
 import { useTodayViewModel } from '../../context.ts';
-import { useObservable } from '../../hooks.ts';
 import HabitFormPopup from './screens/HabitFormPopup.tsx';
 import SettingsScreen from './screens/Settings.tsx';
 import StatsScreen from './screens/Stats.tsx';
@@ -35,7 +35,8 @@ const TABS: Tab[] = [
 
 export default function F7Root({ theme }: { theme: Framework7Theme }) {
   const today = useTodayViewModel();
-  const { todayLabel } = useObservable(today);
+  const { todayLabel } = useStore(today);
+  const openEditor = useStore(today, (state) => state.openEditor);
   const [screen, setScreen] = useState('today');
 
   return (
@@ -52,7 +53,7 @@ export default function F7Root({ theme }: { theme: Framework7Theme }) {
                   iconIos="f7:plus"
                   iconMaterial="add"
                   aria-label="Add habit"
-                  onClick={() => today.openEditor(null)}
+                  onClick={() => openEditor(null)}
                 />
               </NavRight>
             )}
@@ -77,7 +78,7 @@ export default function F7Root({ theme }: { theme: Framework7Theme }) {
           </Toolbar>
 
           {theme === 'md' && screen === 'today' && (
-            <Fab position="right-bottom" onClick={() => today.openEditor(null)}>
+            <Fab position="right-bottom" onClick={() => openEditor(null)}>
               <Icon ios="f7:plus" md="material:add" />
             </Fab>
           )}

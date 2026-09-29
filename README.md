@@ -43,7 +43,9 @@ together in a composition root. See [docs/architecture.md](docs/architecture.md)
   rollover, device detection, the install event, confetti); repositories are the single source of
   truth and re-publish an immutable snapshot on every change.
 - **`src/ui`** — one view model per screen: it reads repositories, turns entities into
-  presentation-ready items and exposes commands. Views only render state and call them.
+  presentation-ready items and exposes commands. View models are plain
+  [zustand](https://zustand.docs.pmnd.rs/) stores, so they live outside React and views subscribe with
+  `useStore`.
 - **`packages/ui-kit`** — the design system and the views for all six design languages. It never
   imports application code: the app injects its view models (`src/app/App.tsx`) and TypeScript checks
   that object against the kit's `KitApi` contract. See [its README](packages/ui-kit/README.md).

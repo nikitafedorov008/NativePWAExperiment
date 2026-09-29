@@ -9,6 +9,7 @@
  * project. Views are dumb by contract: they read `state` and call commands.
  */
 import type { ReactNode } from 'react';
+import type { StoreApi } from 'zustand';
 
 /* ---------- design languages ---------- */
 
@@ -63,11 +64,12 @@ export interface WeekDay {
 
 /* ---------- observable / view-model contracts ---------- */
 
-/** A ChangeNotifier-like source React subscribes to (see src/ui/core/hooks.ts). */
-export interface Observable<T> {
-  readonly state: T;
-  subscribe(listener: () => void): () => void;
-}
+/**
+ * View models and repositories are plain zustand stores: they live outside
+ * React (so the domain and data layers stay framework-free) and views read them
+ * with `useStore` — the ecosystem-standard subscription React itself points to.
+ */
+export type Observable<T> = StoreApi<T>;
 
 export interface TodayItem {
   id: string;
@@ -85,7 +87,7 @@ export interface TodayState {
   editor: { open: boolean; habit: Habit | null };
 }
 
-export interface TodayViewModelApi extends Observable<TodayState> {
+export interface TodayActions {
   toggleToday(id: string): void;
   toggleDay(id: string, dateKey: DateKey): void;
   remove(id: string): void;
@@ -94,6 +96,8 @@ export interface TodayViewModelApi extends Observable<TodayState> {
   closeEditor(): void;
   submitEditor(input: HabitInput): boolean;
 }
+
+export type TodayViewModelApi = Observable<TodayState & TodayActions>;
 
 export interface StatsItem {
   id: string;
@@ -108,7 +112,7 @@ export interface StatsState {
   items: StatsItem[];
 }
 
-export interface StatsViewModelApi extends Observable<StatsState> {}
+export type StatsViewModelApi = Observable<StatsState>;
 
 export interface InstallState {
   canPrompt: boolean;
@@ -119,10 +123,12 @@ export interface InstallState {
   instructions: { title: string; steps: string[] };
 }
 
-export interface InstallViewModelApi extends Observable<InstallState> {
+export interface InstallActions {
   dismiss(): void;
   prompt(): void;
 }
+
+export type InstallViewModelApi = Observable<InstallState & InstallActions>;
 
 export interface SettingsState {
   rows: { label: string; value: string }[];
@@ -131,7 +137,7 @@ export interface SettingsState {
   resetOpen: boolean;
 }
 
-export interface SettingsViewModelApi extends Observable<SettingsState> {
+export interface SettingsActions {
   setDesign(value: DesignSystem | null): void;
   requestReset(): void;
   cancelReset(): void;
@@ -139,6 +145,8 @@ export interface SettingsViewModelApi extends Observable<SettingsState> {
   dismissInstall(): void;
   promptInstall(): void;
 }
+
+export type SettingsViewModelApi = Observable<SettingsState & SettingsActions>;
 
 export interface DomainConstants {
   DEFAULT_EMOJI: string;

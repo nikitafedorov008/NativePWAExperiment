@@ -27,7 +27,6 @@ export {
   useAppearance,
   useDomainConstants,
 } from './context.ts';
-export { useObservable } from './hooks.ts';
 
 export {
   DESIGN_SYSTEMS,
@@ -76,13 +75,16 @@ export type {
   Observable,
   TodayItem,
   TodayState,
+  TodayActions,
   TodayViewModelApi,
   StatsItem,
   StatsState,
   StatsViewModelApi,
   InstallState,
+  InstallActions,
   InstallViewModelApi,
   SettingsState,
+  SettingsActions,
   SettingsViewModelApi,
   DomainConstants,
   KitApi,

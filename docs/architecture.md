@@ -21,19 +21,36 @@ Rules the code holds to:
 - A **view model** is one per view. It reads repositories, turns entities into presentation-ready
   items, owns transient UI state (open/closed, in-progress text) and exposes commands.
 - A **repository** is the single source of truth for one kind of data. It persists through services,
-  never knows about other repositories, and re-publishes an immutable snapshot on every change.
-- A **service** wraps one external thing (localStorage, `matchMedia`, the install event, confetti).
-  It holds no domain state and never throws at the caller.
+  never knows about other repositories, and republishes its state on every change.
+- A **service** wraps one external thing (localStorage, `matchMedia`, the install event, the clock,
+  confetti). It holds no domain state and never throws at the caller.
 - **Use cases** own the rules that must not be duplicated (a name is required, a future day cannot be
   completed, an unknown id is rejected). Expected failures come back as `Result`, not exceptions.
 - Everything is constructed once in the **composition root**; nothing reaches for a global.
+
+### State lives in zustand stores
+
+Repositories, services and view models are plain [zustand](https://zustand.docs.pmnd.rs/) stores
+(`createStore` from `zustand/vanilla`), which keeps them **outside React** — the layering above only
+works because `domain/` and `data/` never import a component library. Views subscribe with
+`useStore(store)`, which is the ecosystem-standard subscription that React's own
+`useSyncExternalStore` is built for.
+
+```tsx
+const today = useTodayViewModel();                       // the store, not a hook value
+const { items, progress } = useStore(today);             // data
+const toggleToday = useStore(today, (s) => s.toggleToday); // commands
+```
+
+Action methods live in the same store as the state they change, which is the usual zustand shape and
+keeps every view to a single hook call per store.
 
 ## Mapping, side by side
 
 | Flutter | Here |
 |---|---|
 | `main.dart` | `src/main.tsx` |
-| `lib/config/` | `src/core/` — framework primitives (`ChangeNotifier`) |
+| `lib/config/` | `src/core/` — framework-level primitives |
 | `lib/utils/` | `src/utils/` — date keys and other small helpers |
 | `domain/models/*.dart` | `src/domain/models/habit.ts`, `result.ts` |
 | `domain/use_cases/*.dart` | `src/domain/use_cases/habits.ts` — write rules + read models |
@@ -43,7 +60,7 @@ Rules the code holds to:
 | `ui/<feature>/view_models/*.dart` | `src/ui/<feature>/view_models/*.ts` |
 | `ui/core/widgets/` | `packages/ui-kit` — shared widgets, plus the six design languages |
 | `di.dart` / `Provider`s at the root | `src/app/services.tsx` |
-| `ChangeNotifier` + `ListenableBuilder` | `src/core/change_notifier.ts` + `src/ui/core/hooks.ts` (`useNotifier`) |
+| `ChangeNotifier` + `ListenableBuilder` | a zustand store + `useStore` from `zustand` |
 | `ThemeData` + `MaterialApp`/`CupertinoApp` | `packages/ui-kit/src/theme.tsx` + the language registry |
 
 Flutter's `Result`-style error handling is `src/domain/models/result.ts`: repositories and use cases
@@ -101,7 +118,8 @@ packages/ui-kit/                 design system + views for six languages
 |---|---|
 | `utils/__tests__` | date keys across month, year and DST boundaries (`TZ=America/New_York`) |
 | `domain/use_cases/__tests__` | every rule: validation, future dates, sorted completions, streaks, seven-day summaries |
-| `data/__tests__`, `data/services/__tests__` | envelope validation, persistence round-trips, first-run seeding, throwing storage, UA detection, per-browser install steps |
+| `data/__tests__`, `data/services/__tests__` | envelope validation, persistence round-trips, first-run seeding, throwing storage, clock rollover, UA detection, per-browser install steps |
+| `ui/**/view_models/__tests__` | the whole chain without React: command → use case → repository → store → view-model state |
 | `packages/ui-kit/src/__tests__` | the design-language registry and resolution rules |
 
 View models are deliberately thin: they hold no rule that is not already covered above, which is the

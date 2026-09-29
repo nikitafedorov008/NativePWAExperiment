@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Button, Dialog, Text, TextInput } from '../../../widgets.tsx';
 
@@ -44,12 +44,14 @@ function EmojiPicker({
 
 /**
  * The habit form is a dumb view over the Today view model: open/close state and
- * the habit being edited both live in the view model, the form only holds the
+ * the habit being edited both live in the store, the form only holds the
  * in-progress text until it is submitted.
  */
 export default function HabitFormDialog() {
   const today = useTodayViewModel();
-  const { editor } = useObservable(today);
+  const { editor } = useStore(today);
+  const closeEditor = useStore(today, (state) => state.closeEditor);
+  const submitEditor = useStore(today, (state) => state.submitEditor);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
   const habit = editor.habit;
   const editing = Boolean(habit);
@@ -67,17 +69,17 @@ export default function HabitFormDialog() {
 
   const submit = (): void => {
     if (!canSubmit) return;
-    today.submitEditor({ name, emoji });
+    submitEditor({ name, emoji });
   };
 
   return (
     <Dialog
       open={editor.open}
-      onClose={today.closeEditor}
+      onClose={closeEditor}
       title={editing ? 'Rename habit' : 'New habit'}
       actions={
         <>
-          <Button variant="text" onClick={today.closeEditor}>Cancel</Button>
+          <Button variant="text" onClick={closeEditor}>Cancel</Button>
           <Button onClick={submit} disabled={!canSubmit}>{editing ? 'Save' : 'Add habit'}</Button>
         </>
       }

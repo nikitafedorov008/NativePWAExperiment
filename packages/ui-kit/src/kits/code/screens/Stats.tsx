@@ -1,12 +1,12 @@
+import { useStore } from 'zustand';
 import { useStatsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Card, Text } from '../../../widgets.tsx';
 import WeekDots from '../components/WeekDots.tsx';
 
 export default function Stats() {
   const t = useTheme();
-  const { tiles, items } = useObservable(useStatsViewModel());
+  const { tiles, items } = useStore(useStatsViewModel());
 
   return (
     <>

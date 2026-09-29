@@ -4,7 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Six design languages (Cupertino, Material, Fluent, Yaru, custom, shadcn) rendered from one component tree",
-  "keywords": ["pwa", "design-system", "framework7", "fluent", "cupertino", "material", "yaru", "shadcn"],
+  "keywords": [
+    "pwa",
+    "design-system",
+    "framework7",
+    "fluent",
+    "cupertino",
+    "material",
+    "yaru",
+    "shadcn"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./design-systems": "./src/designSystems.ts"
@@ -21,6 +30,7 @@
     "framework7-icons": "^5",
     "framework7-react": "^9.1",
     "lucide-react": "^1.41",
-    "material-icons": "^1.13"
+    "material-icons": "^1.13",
+    "zustand": "^5.0.15"
   }
 }

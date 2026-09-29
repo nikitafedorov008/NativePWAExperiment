@@ -1,13 +1,15 @@
+import { useStore } from 'zustand';
 import { X } from 'lucide-react';
 import { useInstallViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Button, Card, IconButton, Text } from '../../../widgets.tsx';
 
 export default function InstallBanner() {
   const t = useTheme();
   const install = useInstallViewModel();
-  const state = useObservable(install);
+  const state = useStore(install);
+  const dismiss = useStore(install, (s) => s.dismiss);
+  const prompt = useStore(install, (s) => s.prompt);
 
   if (state.outcome === 'accepted') {
     return (
@@ -21,7 +23,7 @@ export default function InstallBanner() {
   return (
     <Card style={{ position: 'relative', gap: 10 }}>
       <div style={{ position: 'absolute', top: 8, right: 8 }}>
-        <IconButton icon={X} label="Dismiss install banner" onClick={install.dismiss} />
+        <IconButton icon={X} label="Dismiss install banner" onClick={dismiss} />
       </div>
       <Text variant="headline">Install Streaks</Text>
       <Text variant="caption">
@@ -29,7 +31,7 @@ export default function InstallBanner() {
         Fluent on Windows.
       </Text>
       {state.canPrompt ? (
-        <Button onClick={install.prompt}>Install app</Button>
+        <Button onClick={prompt}>Install app</Button>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Text variant="label">{state.instructions.title}</Text>

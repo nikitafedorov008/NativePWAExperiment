@@ -1,3 +1,4 @@
+import { useStore } from 'zustand';
 import {
   Block,
   BlockFooter,
@@ -9,17 +10,19 @@ import {
   f7,
 } from 'framework7-react';
 import { useSettingsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 
 export default function SettingsScreen() {
   const settings = useSettingsViewModel();
-  const { rows, design, install } = useObservable(settings);
+  const { rows, design, install } = useStore(settings);
+  const setDesign = useStore(settings, (state) => state.setDesign);
+  const confirmReset = useStore(settings, (state) => state.confirmReset);
+  const promptInstall = useStore(settings, (state) => state.promptInstall);
 
-  const confirmReset = (): void => {
+  const askReset = (): void => {
     f7.dialog.confirm(
       'Your habits and completions will be deleted and replaced with the four demo habits.',
       'Reset all data?',
-      () => settings.confirmReset(),
+      () => confirmReset(),
     );
   };
 
@@ -45,7 +48,7 @@ export default function SettingsScreen() {
               value={value}
               title={option.label}
               checked={(design.override ?? 'auto') === value}
-              onChange={() => settings.setDesign(option.value)}
+              onChange={() => setDesign(option.value)}
             />
           );
         })}
@@ -58,7 +61,7 @@ export default function SettingsScreen() {
         <Block strong>Installed — open Streaks from your home screen / dock.</Block>
       ) : install.canPrompt ? (
         <List strong inset>
-          <ListButton title="Install app" onClick={settings.promptInstall} />
+          <ListButton title="Install app" onClick={promptInstall} />
         </List>
       ) : (
         <Block strong>
@@ -73,7 +76,7 @@ export default function SettingsScreen() {
 
       <BlockTitle>Reset data</BlockTitle>
       <List strong inset>
-        <ListButton color="red" title="Reset to demo habits" onClick={confirmReset} />
+        <ListButton color="red" title="Reset to demo habits" onClick={askReset} />
       </List>
       <BlockFooter>Clears everything and restores the four demo habits.</BlockFooter>
     </>

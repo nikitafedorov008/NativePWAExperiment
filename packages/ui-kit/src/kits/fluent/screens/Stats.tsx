@@ -1,10 +1,10 @@
+import { useStore } from 'zustand';
 import { Card, Text, Title2 } from '@fluentui/react-components';
 import { useStatsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import WeekDots from '../components/WeekDots.tsx';
 
 export default function StatsScreen() {
-  const { tiles, items } = useObservable(useStatsViewModel());
+  const { tiles, items } = useStore(useStatsViewModel());
 
   return (
     <section className="fluent-screen">

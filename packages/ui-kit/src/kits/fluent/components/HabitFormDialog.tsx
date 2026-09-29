@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import {
   Button,
   Dialog,
@@ -11,11 +12,12 @@ import {
   Label,
 } from '@fluentui/react-components';
 import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 
 export default function HabitFormDialog() {
   const today = useTodayViewModel();
-  const { editor } = useObservable(today);
+  const { editor } = useStore(today);
+  const closeEditor = useStore(today, (state) => state.closeEditor);
+  const submitEditor = useStore(today, (state) => state.submitEditor);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
   const habit = editor.habit;
   const editing = Boolean(habit);
@@ -33,11 +35,11 @@ export default function HabitFormDialog() {
 
   const submit = (): void => {
     if (!canSubmit) return;
-    today.submitEditor({ name, emoji });
+    submitEditor({ name, emoji });
   };
 
   return (
-    <Dialog open={editor.open} onOpenChange={(_, data) => { if (!data.open) today.closeEditor(); }}>
+    <Dialog open={editor.open} onOpenChange={(_, data) => { if (!data.open) closeEditor(); }}>
       <DialogSurface>
         <DialogBody>
           <DialogTitle>{editing ? 'Rename habit' : 'New habit'}</DialogTitle>
@@ -77,7 +79,7 @@ export default function HabitFormDialog() {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button appearance="secondary" onClick={today.closeEditor}>Cancel</Button>
+            <Button appearance="secondary" onClick={closeEditor}>Cancel</Button>
             <Button appearance="primary" disabled={!canSubmit} onClick={submit}>
               {editing ? 'Save' : 'Add habit'}
             </Button>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InstallService, installInstructions } from '../install_service.ts';
+import { createInstallService, installInstructions } from '../install_service.ts';
 
 describe('installInstructions', () => {
   const OSES = ['ios', 'macos', 'android', 'windows', 'linux', 'unknown'];
@@ -44,12 +44,10 @@ describe('installInstructions', () => {
 
 describe('InstallService', () => {
   it('reports no prompt until the browser offers one', () => {
-    const service = new InstallService();
-    expect(service.state).toEqual({ canPrompt: false, installed: false, outcome: null });
+    expect(createInstallService().getState()).toEqual({ canPrompt: false, installed: false, outcome: null });
   });
 
   it('answers "unavailable" when nothing was captured', async () => {
-    const service = new InstallService();
-    await expect(service.prompt()).resolves.toBe('unavailable');
+    await expect(createInstallService().prompt()).resolves.toBe('unavailable');
   });
 });

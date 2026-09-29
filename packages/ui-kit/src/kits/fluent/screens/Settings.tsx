@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
+import { useStore } from 'zustand';
 import {
   Button,
   Card,
@@ -17,7 +18,6 @@ import {
 } from '@fluentui/react-components';
 import { ArrowClockwiseRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
 import { useSettingsViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import type { DesignSystem } from '../../../types.ts';
 
 function CardTitle({ title, description }: { title: string; description?: string }) {
@@ -40,7 +40,12 @@ function SectionCard({ title, description, children }: { title: string; descript
 
 export default function SettingsScreen() {
   const settings = useSettingsViewModel();
-  const { rows, design, install, resetOpen } = useObservable(settings);
+  const { rows, design, install, resetOpen } = useStore(settings);
+  const setDesign = useStore(settings, (state) => state.setDesign);
+  const requestReset = useStore(settings, (state) => state.requestReset);
+  const cancelReset = useStore(settings, (state) => state.cancelReset);
+  const confirmReset = useStore(settings, (state) => state.confirmReset);
+  const promptInstall = useStore(settings, (state) => state.promptInstall);
 
   return (
     <section className="fluent-screen">
@@ -67,9 +72,7 @@ export default function SettingsScreen() {
       >
         <RadioGroup
           value={design.override ?? 'auto'}
-          onChange={(_, data) =>
-            settings.setDesign(data.value === 'auto' ? null : (data.value as DesignSystem))
-          }
+          onChange={(_, data) => setDesign(data.value === 'auto' ? null : (data.value as DesignSystem))}
         >
           {design.options.map((option) => (
             <Radio key={option.value ?? 'auto'} value={option.value ?? 'auto'} label={option.label} />
@@ -84,7 +87,7 @@ export default function SettingsScreen() {
         {install.installed ? null : install.outcome === 'accepted' ? (
           <Text size={300}>Installed — open Streaks from your taskbar / Start menu.</Text>
         ) : install.canPrompt ? (
-          <Button appearance="primary" icon={<ArrowDownloadRegular />} onClick={settings.promptInstall}>
+          <Button appearance="primary" icon={<ArrowDownloadRegular />} onClick={promptInstall}>
             Install app
           </Button>
         ) : (
@@ -105,11 +108,11 @@ export default function SettingsScreen() {
           appearance="secondary"
           icon={<ArrowClockwiseRegular />}
           className="destructive-text"
-          onClick={settings.requestReset}
+          onClick={requestReset}
         >
           Reset data
         </Button>
-        <Dialog open={resetOpen} onOpenChange={(_, data) => { if (!data.open) settings.cancelReset(); }}>
+        <Dialog open={resetOpen} onOpenChange={(_, data) => { if (!data.open) cancelReset(); }}>
           <DialogSurface>
             <DialogBody>
               <DialogTitle>Reset all data?</DialogTitle>
@@ -117,8 +120,8 @@ export default function SettingsScreen() {
                 Your habits and completions will be deleted and replaced with the four demo habits.
               </DialogContent>
               <DialogActions>
-                <Button appearance="secondary" onClick={settings.cancelReset}>Cancel</Button>
-                <Button appearance="primary" className="destructive-text" onClick={settings.confirmReset}>
+                <Button appearance="secondary" onClick={cancelReset}>Cancel</Button>
+                <Button appearance="primary" className="destructive-text" onClick={confirmReset}>
                   Reset
                 </Button>
               </DialogActions>

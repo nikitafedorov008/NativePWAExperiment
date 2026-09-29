@@ -1,6 +1,6 @@
+import { useStore } from 'zustand';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useInstallViewModel, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Badge, Card, Checkbox, Divider, IconButton, ProgressBar, Text } from '../../../widgets.tsx';
 import type { TodayItem } from '../../../types.ts';
@@ -9,18 +9,23 @@ import WeekDots from '../components/WeekDots.tsx';
 
 function HabitTile({ item }: { item: TodayItem }) {
   const today = useTodayViewModel();
+  const toggleToday = useStore(today, (state) => state.toggleToday);
+  const toggleDay = useStore(today, (state) => state.toggleDay);
+  const openEditor = useStore(today, (state) => state.openEditor);
+  const remove = useStore(today, (state) => state.remove);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <Checkbox
           checked={item.doneToday}
-          onChange={() => today.toggleToday(item.id)}
+          onChange={() => toggleToday(item.id)}
           label={`${item.name}: done today`}
         />
         <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
         <button
           type="button" className="pressable"
-          aria-label={`Rename ${item.name}`} onClick={() => today.openEditor(item.id)}
+          aria-label={`Rename ${item.name}`} onClick={() => openEditor(item.id)}
           style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left', borderRadius: 6, padding: '2px 0' }}
         >
           <Text variant="body" style={{ fontWeight: 550, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -29,9 +34,9 @@ function HabitTile({ item }: { item: TodayItem }) {
           <Pencil size={12} style={{ opacity: 0.55, flexShrink: 0 }} aria-hidden="true" />
         </button>
         {item.streak > 0 && <Badge>🔥 {item.streak}</Badge>}
-        <IconButton icon={Trash2} label={`Delete ${item.name}`} onClick={() => today.remove(item.id)} />
+        <IconButton icon={Trash2} label={`Delete ${item.name}`} onClick={() => remove(item.id)} />
       </div>
-      <WeekDots days={item.days} onToggle={(date) => today.toggleDay(item.id, date)} />
+      <WeekDots days={item.days} onToggle={(date) => toggleDay(item.id, date)} />
     </div>
   );
 }
@@ -40,8 +45,8 @@ export default function Today() {
   const t = useTheme();
   const today = useTodayViewModel();
   const install = useInstallViewModel();
-  const { progress, items } = useObservable(today);
-  const { visible } = useObservable(install);
+  const { progress, items } = useStore(today);
+  const { visible } = useStore(install);
 
   return (
     <>

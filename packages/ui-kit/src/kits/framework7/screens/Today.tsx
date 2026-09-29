@@ -1,3 +1,4 @@
+import { useStore } from 'zustand';
 import {
   Badge,
   Block,
@@ -10,14 +11,18 @@ import {
   SwipeoutButton,
 } from 'framework7-react';
 import { useInstallViewModel, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 import WeekDots from '../components/WeekDots.tsx';
 
 export default function TodayScreen() {
   const today = useTodayViewModel();
+  const { progress, items } = useStore(today);
+  const toggleToday = useStore(today, (state) => state.toggleToday);
+  const toggleDay = useStore(today, (state) => state.toggleDay);
+  const openEditor = useStore(today, (state) => state.openEditor);
+  const remove = useStore(today, (state) => state.remove);
+
   const install = useInstallViewModel();
-  const { progress, items } = useObservable(today);
-  const installState = useObservable(install);
+  const installState = useStore(install);
 
   return (
     <>
@@ -36,7 +41,7 @@ export default function TodayScreen() {
         <Block strong>
           <p className="install-steps-title">Install Streaks</p>
           {installState.canPrompt ? (
-            <Link onClick={install.prompt}>Install app</Link>
+            <Link onClick={() => installState.prompt()}>Install app</Link>
           ) : (
             <ol className="install-steps">
               {installState.instructions.steps.map((step) => (
@@ -59,7 +64,7 @@ export default function TodayScreen() {
                 aria-label={`${item.name}: done today`}
                 aria-pressed={item.doneToday}
                 className={`habit-check${item.doneToday ? ' done' : ''}`}
-                onClick={() => today.toggleToday(item.id)}
+                onClick={() => toggleToday(item.id)}
               >
                 <Icon ios="f7:checkmark" md="material:check" />
               </button>
@@ -68,7 +73,7 @@ export default function TodayScreen() {
                 type="button"
                 className="habit-name"
                 aria-label={`Rename ${item.name}`}
-                onClick={() => today.openEditor(item.id)}
+                onClick={() => openEditor(item.id)}
               >
                 <span className="habit-emoji" aria-hidden="true">{item.emoji}</span>
                 <span className="habit-name-text">{item.name}</span>
@@ -80,21 +85,21 @@ export default function TodayScreen() {
                   iconIos="f7:pencil"
                   iconMaterial="edit"
                   aria-label={`Rename ${item.name}`}
-                  onClick={() => today.openEditor(item.id)}
+                  onClick={() => openEditor(item.id)}
                 />
                 <Link
                   className="habit-icon-btn danger"
                   iconIos="f7:trash"
                   iconMaterial="delete"
                   aria-label={`Delete ${item.name}`}
-                  onClick={() => today.remove(item.id)}
+                  onClick={() => remove(item.id)}
                 />
               </span>
               <div slot="inner" className="habit-week">
-                <WeekDots days={item.days} onToggle={(date) => today.toggleDay(item.id, date)} />
+                <WeekDots days={item.days} onToggle={(date) => toggleDay(item.id, date)} />
               </div>
               <SwipeoutActions right>
-                <SwipeoutButton delete onClick={() => today.remove(item.id)}>
+                <SwipeoutButton delete onClick={() => remove(item.id)}>
                   <Icon ios="f7:trash" md="material:delete" /> Delete
                 </SwipeoutButton>
               </SwipeoutActions>

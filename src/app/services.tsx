@@ -4,22 +4,23 @@
  * Everything is constructed once, here, and handed down: services (storage,
  * clock, device, install, celebration) → repositories → view models. No module
  * reaches for a global; the wiring is visible in one place, which is what makes
- * the layers swappable and testable.
+ * the layers swappable and testable. Repositories and view models are zustand
+ * stores, so React subscribes with `useStore(store)`.
  */
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { LocalStorageService } from '../data/services/local_storage_service.ts';
-import { ClockService } from '../data/services/clock_service.ts';
+import { createClockService } from '../data/services/clock_service.ts';
 import { DeviceService } from '../data/services/device_service.ts';
-import { InstallService } from '../data/services/install_service.ts';
+import { createInstallService } from '../data/services/install_service.ts';
 import { CelebrationService } from '../data/services/celebration_service.ts';
-import { HabitsRepository } from '../data/repositories/habits_repository.ts';
-import { DesignLanguageRepository } from '../data/repositories/design_language_repository.ts';
-import { InstallRepository } from '../data/repositories/install_repository.ts';
-import { TodayViewModel } from '../ui/today/view_models/today_view_model.ts';
-import { StatsViewModel } from '../ui/stats/view_models/stats_view_model.ts';
-import { SettingsViewModel } from '../ui/settings/view_models/settings_view_model.ts';
-import { InstallViewModel } from '../ui/install/view_models/install_view_model.ts';
+import { createHabitsRepository } from '../data/repositories/habits_repository.ts';
+import { createDesignLanguageRepository } from '../data/repositories/design_language_repository.ts';
+import { createInstallRepository } from '../data/repositories/install_repository.ts';
+import { createTodayViewModel } from '../ui/today/view_models/today_view_model.ts';
+import { createStatsViewModel } from '../ui/stats/view_models/stats_view_model.ts';
+import { createSettingsViewModel } from '../ui/settings/view_models/settings_view_model.ts';
+import { createInstallViewModel } from '../ui/install/view_models/install_view_model.ts';
 import { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } from '../domain/models/habit.ts';
 
 export interface DomainConstants {
@@ -28,34 +29,20 @@ export interface DomainConstants {
   NAME_MAX_LENGTH: number;
 }
 
-export interface AppServices {
-  storage: LocalStorageService;
-  clock: ClockService;
-  device: DeviceService;
-  installService: InstallService;
-  celebration: CelebrationService;
-  habits: HabitsRepository;
-  design: DesignLanguageRepository;
-  installRepository: InstallRepository;
-  today: TodayViewModel;
-  stats: StatsViewModel;
-  settings: SettingsViewModel;
-  install: InstallViewModel;
-  constants: DomainConstants;
-}
-
 const APP_PREFIX = 'streaks';
 
-export function createServices(): AppServices {
+export function createServices() {
   const storage = new LocalStorageService(APP_PREFIX);
-  const clock = new ClockService();
+  const clock = createClockService();
   const device = new DeviceService();
-  const installService = new InstallService();
+  const installService = createInstallService();
   const celebration = new CelebrationService();
 
-  const habits = new HabitsRepository(storage, clock);
-  const design = new DesignLanguageRepository(storage, device);
-  const installRepository = new InstallRepository(installService, storage, device);
+  const habits = createHabitsRepository(storage, clock);
+  const design = createDesignLanguageRepository(storage, device);
+  const installRepository = createInstallRepository(installService, storage, device);
+
+  const constants: DomainConstants = { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH };
 
   return {
     storage,
@@ -66,13 +53,17 @@ export function createServices(): AppServices {
     habits,
     design,
     installRepository,
-    today: new TodayViewModel(habits, celebration),
-    stats: new StatsViewModel(habits),
-    settings: new SettingsViewModel(design, installRepository, habits),
-    install: new InstallViewModel(installRepository),
-    constants: { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH },
+    today: createTodayViewModel({ habits, celebration }),
+    stats: createStatsViewModel(habits),
+    settings: createSettingsViewModel({ design, install: installRepository, habits }),
+    install: createInstallViewModel(installRepository),
+    /** Appearance is plain data: the kit only reads it to pick a theme. */
+    appearance: design.store,
+    constants,
   };
 }
+
+export type AppServices = ReturnType<typeof createServices>;
 
 const ServicesContext = createContext<AppServices | null>(null);
 
@@ -89,7 +80,6 @@ export function ServicesProvider({ children }: { children: ReactNode }) {
     return () => {
       services.clock.stop();
       services.habits.dispose();
-      services.design.dispose();
     };
   }, [services]);
 

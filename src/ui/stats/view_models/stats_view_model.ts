@@ -1,10 +1,10 @@
 /**
- * ui/stats/view_models — the Stats view model. Formats the summary tiles and
- * the per-habit line so all three views render plain strings.
+ * ui/stats/view_models — the Stats view model. It formats the summary tiles and
+ * the per-habit line, so all three views render plain strings.
  */
-import { ChangeNotifier } from '../../../core/change_notifier.ts';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand';
 import { getHabitStats, getOverallStats } from '../../../domain/use_cases/habits.ts';
-import type { WeekDayView } from '../../../domain/use_cases/habits.ts';
 import type { HabitsRepository } from '../../../data/repositories/habits_repository.ts';
 
 export interface StatsItem {
@@ -12,7 +12,7 @@ export interface StatsItem {
   name: string;
   emoji: string;
   summary: string;
-  days: WeekDayView[];
+  days: ReturnType<typeof getHabitStats>['weekStrip'];
 }
 
 export interface StatsState {
@@ -20,32 +20,24 @@ export interface StatsState {
   items: StatsItem[];
 }
 
-export class StatsViewModel extends ChangeNotifier {
-  #state: StatsState = { tiles: [], items: [] };
+export type StatsViewModel = StoreApi<StatsState>;
 
-  constructor(private readonly habits: HabitsRepository) {
-    super();
-    this.habits.addListener(() => this.#recompute());
-    this.#recompute();
-  }
+export function createStatsViewModel(habits: HabitsRepository): StatsViewModel {
+  const store = createStore<StatsState>(() => ({ tiles: [], items: [] }));
 
-  get state(): StatsState {
-    return this.#state;
-  }
-
-  #recompute(): void {
-    const { habits, today } = this.habits.state;
-    const overall = getOverallStats(habits, today);
+  const recompute = (): void => {
+    const { habits: list, today } = habits.store.getState();
+    const overall = getOverallStats(list, today);
     const best = overall.bestStreakHabit;
 
-    this.#state = {
+    store.setState({
       tiles: [
         { label: 'Total completions', value: String(overall.totalCompletions) },
         { label: 'Best streak', value: best ? `${best.emoji} ${best.name} · ${best.bestStreak} days` : '—' },
         { label: 'Perfect days (7d)', value: String(overall.perfectDays7) },
         { label: 'Completion rate (7d)', value: `${Math.round(overall.completionRate7 * 100)}%` },
       ],
-      items: habits.map((habit) => {
+      items: list.map((habit) => {
         const stats = getHabitStats(habit, today);
         return {
           id: habit.id,
@@ -55,7 +47,10 @@ export class StatsViewModel extends ChangeNotifier {
           days: stats.weekStrip,
         };
       }),
-    };
-    this.notifyListeners();
-  }
+    });
+  };
+
+  habits.store.subscribe(recompute);
+  recompute();
+  return store;
 }

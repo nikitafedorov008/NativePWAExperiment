@@ -1,12 +1,13 @@
 /**
- * data/repositories/install_repository — the install flow as observable state.
+ * data/repositories/install_repository — the install flow as a store.
  *
  * Combines three sources into one answer for the UI: whether the browser
  * offered a prompt (install service), whether the user hid the banner
  * (persisted), and which per-browser instructions to show when no prompt
  * exists (derived from what the device service reports).
  */
-import { ChangeNotifier } from '../../core/change_notifier.ts';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand';
 import { installInstructions } from '../services/install_service.ts';
 import type { InstallInstructions, InstallOutcome, InstallService } from '../services/install_service.ts';
 import type { DeviceService } from '../services/device_service.ts';
@@ -24,64 +25,60 @@ export interface InstallState {
   instructions: InstallInstructions;
 }
 
-export class InstallRepository extends ChangeNotifier {
-  #dismissed = false;
-  #state: InstallState;
+export type InstallStore = StoreApi<InstallState>;
 
-  constructor(
-    private readonly service: InstallService,
-    private readonly storage: LocalStorageService,
-    private readonly device: DeviceService,
-  ) {
-    super();
-    this.#dismissed = this.storage.readString(DISMISS_KEY) === '1';
-    this.#state = this.#compose();
-    this.service.addListener(() => this.#publish());
-  }
+export interface InstallRepository {
+  readonly store: InstallStore;
+  start(): void;
+  prompt(): Promise<InstallOutcome | 'unavailable'>;
+  dismiss(): void;
+  undismiss(): void;
+}
 
-  get state(): InstallState {
-    return this.#state;
-  }
+export function createInstallRepository(
+  service: InstallService,
+  storage: LocalStorageService,
+  device: DeviceService,
+): InstallRepository {
+  let dismissed = storage.readString(DISMISS_KEY) === '1';
 
-  start(): void {
-    this.service.start();
-    this.#publish();
-  }
-
-  async prompt(): Promise<InstallOutcome | 'unavailable'> {
-    const outcome = await this.service.prompt();
-    this.#dismissed = false;
-    this.#publish();
-    return outcome;
-  }
-
-  dismiss(): void {
-    this.#dismissed = true;
-    this.storage.writeString(DISMISS_KEY, '1');
-    this.#publish();
-  }
-
-  undismiss(): void {
-    this.#dismissed = false;
-    this.storage.remove(DISMISS_KEY);
-    this.#publish();
-  }
-
-  #compose(): InstallState {
-    const event = this.service.state;
-    const installed = this.device.installed || event.installed;
+  const compose = (): InstallState => {
+    const event = service.getState();
+    const installed = device.installed || event.installed;
     return {
       canPrompt: event.canPrompt,
       installed,
       outcome: event.outcome,
-      dismissed: this.#dismissed,
-      visible: !installed && !this.#dismissed,
-      instructions: installInstructions({ os: this.device.os, browser: this.device.browser }),
+      dismissed,
+      visible: !installed && !dismissed,
+      instructions: installInstructions({ os: device.os, browser: device.browser }),
     };
-  }
+  };
 
-  #publish(): void {
-    this.#state = this.#compose();
-    this.notifyListeners();
-  }
+  const store = createStore<InstallState>(compose);
+  service.subscribe(() => store.setState(compose()));
+
+  return {
+    store,
+    start(): void {
+      service.start();
+      store.setState(compose());
+    },
+    async prompt(): Promise<InstallOutcome | 'unavailable'> {
+      const outcome = await service.prompt();
+      dismissed = false;
+      store.setState(compose());
+      return outcome;
+    },
+    dismiss(): void {
+      dismissed = true;
+      storage.writeString(DISMISS_KEY, '1');
+      store.setState(compose());
+    },
+    undismiss(): void {
+      dismissed = false;
+      storage.remove(DISMISS_KEY);
+      store.setState(compose());
+    },
+  };
 }

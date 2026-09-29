@@ -1,10 +1,11 @@
 /**
- * data/services/install_service — captures `beforeinstallprompt`.
+ * data/services/install_service — captures `beforeinstallprompt` into a store.
  *
- * The event fires once, early, and cannot be re-created: the service stores it
- * so any screen can trigger the prompt later, and reports the user's answer.
+ * The event fires once, early, and cannot be re-created: the store keeps it so
+ * any screen can trigger the prompt later, and records the user's answer.
  */
-import { ChangeNotifier } from '../../core/change_notifier.ts';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand';
 
 export type InstallOutcome = 'accepted' | 'dismissed';
 
@@ -21,53 +22,53 @@ export interface InstallEventState {
   outcome: InstallOutcome | null;
 }
 
-export class InstallService extends ChangeNotifier {
-  #event: BeforeInstallPromptEvent | null = null;
-  #installed = false;
-  #outcome: InstallOutcome | null = null;
-  #captured = false;
-  #state: InstallEventState = { canPrompt: false, installed: false, outcome: null };
+export type InstallService = StoreApi<InstallEventState> & {
+  start(): void;
+  prompt(): Promise<InstallOutcome | 'unavailable'>;
+};
 
-  get state(): InstallEventState {
-    return this.#state;
-  }
+export function createInstallService(): InstallService {
+  const store = createStore<InstallEventState>(() => ({
+    canPrompt: false,
+    installed: false,
+    outcome: null,
+  }));
+  let event: BeforeInstallPromptEvent | null = null;
+  let captured = false;
 
-  /** Subscribes to the browser events once; safe to call repeatedly. */
-  start(): void {
-    if (this.#captured || typeof window === 'undefined') return;
-    this.#captured = true;
-    window.addEventListener('beforeinstallprompt', (event) => {
-      event.preventDefault();
-      this.#event = event as BeforeInstallPromptEvent;
-      this.#publish();
-    });
-    window.addEventListener('appinstalled', () => {
-      this.#event = null;
-      this.#installed = true;
-      this.#publish();
-    });
-  }
+  const publish = (): void =>
+    store.setState({ canPrompt: event !== null, installed: store.getState().installed, outcome: store.getState().outcome });
 
-  async prompt(): Promise<InstallOutcome | 'unavailable'> {
-    const event = this.#event;
-    if (!event) return 'unavailable';
-    try {
-      await event.prompt();
-      const choice = await event.userChoice;
-      this.#outcome = choice.outcome;
-      return choice.outcome;
-    } catch {
-      return 'unavailable';
-    } finally {
-      this.#event = null;
-      this.#publish();
-    }
-  }
-
-  #publish(): void {
-    this.#state = { canPrompt: this.#event !== null, installed: this.#installed, outcome: this.#outcome };
-    this.notifyListeners();
-  }
+  return Object.assign(store, {
+    /** Subscribes to the browser events once; safe to call repeatedly. */
+    start(): void {
+      if (captured || typeof window === 'undefined') return;
+      captured = true;
+      window.addEventListener('beforeinstallprompt', (raw) => {
+        raw.preventDefault();
+        event = raw as BeforeInstallPromptEvent;
+        publish();
+      });
+      window.addEventListener('appinstalled', () => {
+        event = null;
+        store.setState({ canPrompt: false, installed: true });
+      });
+    },
+    async prompt(): Promise<InstallOutcome | 'unavailable'> {
+      if (!event) return 'unavailable';
+      try {
+        await event.prompt();
+        const choice = await event.userChoice;
+        store.setState({ outcome: choice.outcome });
+        return choice.outcome;
+      } catch {
+        return 'unavailable';
+      } finally {
+        event = null;
+        publish();
+      }
+    },
+  });
 }
 
 /** Per-browser "how to install" steps, used where the prompt is unavailable. */

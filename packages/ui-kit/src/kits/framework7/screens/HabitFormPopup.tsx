@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { Block, List, ListInput, Link, NavLeft, NavRight, NavTitle, Navbar, Page, Popup } from 'framework7-react';
 import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
-import { useObservable } from '../../../hooks.ts';
 
 export default function HabitFormPopup() {
   const today = useTodayViewModel();
-  const { editor } = useObservable(today);
+  const { editor } = useStore(today);
+  const closeEditor = useStore(today, (state) => state.closeEditor);
+  const submitEditor = useStore(today, (state) => state.submitEditor);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
   const habit = editor.habit;
   const editing = Boolean(habit);
@@ -23,15 +25,15 @@ export default function HabitFormPopup() {
 
   const submit = (): void => {
     if (!canSubmit) return;
-    today.submitEditor({ name, emoji });
+    submitEditor({ name, emoji });
   };
 
   return (
-    <Popup opened={editor.open} closeOnEscape onPopupClosed={today.closeEditor}>
+    <Popup opened={editor.open} closeOnEscape onPopupClosed={closeEditor}>
       <Page>
         <Navbar>
           <NavLeft>
-            <Link onClick={today.closeEditor}>Cancel</Link>
+            <Link onClick={closeEditor}>Cancel</Link>
           </NavLeft>
           <NavTitle>{editing ? 'Rename habit' : 'New habit'}</NavTitle>
           <NavRight>
