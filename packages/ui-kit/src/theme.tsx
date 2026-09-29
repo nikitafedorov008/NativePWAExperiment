@@ -10,7 +10,7 @@
  */
 import { createContext, useContext, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { usePlatform } from './context.ts';
+import { useAppearance } from './context.ts';
 import { DEFAULT_DESIGN, DESIGN_LANGUAGES } from './designSystems.ts';
 import type {
   CodeLanguage,
@@ -164,7 +164,7 @@ const globalStyles = (theme: Theme): string => `
 const ThemeContext = createContext<Theme | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const { designSystem, prefersDark } = usePlatform();
+  const { designSystem, prefersDark } = useAppearance();
   const theme = useMemo(
     () => resolveTheme({ designSystem, prefersDark }),
     [designSystem, prefersDark],

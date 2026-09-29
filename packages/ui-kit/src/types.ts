@@ -2,9 +2,11 @@
  * types.ts — the kit's own contracts.
  *
  * The kit deliberately does not import application types: everything it needs
- * from the host is described here, and TypeScript's structural typing checks
- * that the app's objects satisfy these shapes when it builds the `KitApi` in
- * `src/app/App.tsx`. That keeps the package liftable into another project.
+ * from the host is described here — the view models it renders, the appearance
+ * it themes with, and the constants the forms use. TypeScript's structural
+ * typing then checks that the host object satisfies these shapes when it builds
+ * the `KitApi` in `src/app/App.tsx`, so the package stays liftable into another
+ * project. Views are dumb by contract: they read `state` and call commands.
  */
 import type { ReactNode } from 'react';
 
@@ -28,7 +30,12 @@ export interface DesignOption {
   label: string;
 }
 
-/* ---------- domain shapes the screens render ---------- */
+export interface Appearance {
+  designSystem: DesignSystem;
+  prefersDark: boolean;
+}
+
+/* ---------- domain shapes the views render ---------- */
 
 /** Local calendar day, `YYYY-MM-DD`. */
 export type DateKey = string;
@@ -41,6 +48,11 @@ export interface Habit {
   completions: DateKey[];
 }
 
+export interface HabitInput {
+  name: string;
+  emoji?: string;
+}
+
 export interface WeekDay {
   date: DateKey;
   done: boolean;
@@ -49,75 +61,83 @@ export interface WeekDay {
   isToday: boolean;
 }
 
-export interface HabitStats {
-  currentStreak: number;
-  bestStreak: number;
-  doneCount: number;
-  weekStrip: WeekDay[];
+/* ---------- observable / view-model contracts ---------- */
+
+/** A ChangeNotifier-like source React subscribes to (see src/ui/core/hooks.ts). */
+export interface Observable<T> {
+  readonly state: T;
+  subscribe(listener: () => void): () => void;
 }
 
-export interface DayProgress {
-  done: number;
-  total: number;
-  ratio: number;
-}
-
-export interface BestStreakHabit {
+export interface TodayItem {
   id: string;
   name: string;
   emoji: string;
-  bestStreak: number;
+  doneToday: boolean;
+  streak: number;
+  days: WeekDay[];
 }
 
-export interface OverallStats {
-  totalCompletions: number;
-  bestStreakHabit: BestStreakHabit | null;
-  perfectDays7: number;
-  completionRate7: number;
-}
-
-/* ---------- what the host app injects ---------- */
-
-export interface HabitInput {
-  name: string;
-  emoji?: string;
-}
-
-export interface HabitsApi {
-  habits: Habit[];
+export interface TodayState {
   todayLabel: string;
-  progress: DayProgress;
-  overall: OverallStats;
-  statsFor(id: string): HabitStats | null;
-  addHabit(input: HabitInput): boolean;
-  renameHabit(id: string, input: HabitInput): boolean;
-  removeHabit(id: string): boolean;
-  toggle(id: string, dateKey: DateKey): void;
-  toggleToday(id: string): void;
-  resetAll(): void;
+  progress: { done: number; total: number; ratio: number };
+  items: TodayItem[];
+  editor: { open: boolean; habit: Habit | null };
 }
 
-export interface InstallApi {
+export interface TodayViewModelApi extends Observable<TodayState> {
+  toggleToday(id: string): void;
+  toggleDay(id: string, dateKey: DateKey): void;
+  remove(id: string): void;
+  /** Pass a habit id to edit one, `null` to create a new one. */
+  openEditor(id: string | null): void;
+  closeEditor(): void;
+  submitEditor(input: HabitInput): boolean;
+}
+
+export interface StatsItem {
+  id: string;
+  name: string;
+  emoji: string;
+  summary: string;
+  days: WeekDay[];
+}
+
+export interface StatsState {
+  tiles: { label: string; value: string }[];
+  items: StatsItem[];
+}
+
+export interface StatsViewModelApi extends Observable<StatsState> {}
+
+export interface InstallState {
   canPrompt: boolean;
-  promptInstall(): Promise<'accepted' | 'dismissed' | 'unavailable'>;
-  outcome: 'accepted' | 'dismissed' | null;
   installed: boolean;
+  outcome: 'accepted' | 'dismissed' | null;
   dismissed: boolean;
-  dismiss(): void;
-  undismiss(): void;
+  visible: boolean;
   instructions: { title: string; steps: string[] };
 }
 
-export interface PlatformApi {
-  os: string;
-  browser: string;
-  displayMode: string;
-  installed: boolean;
-  designSystem: DesignSystem;
-  override: DesignSystem | null;
-  setOverride(value: DesignSystem | null): void;
-  isTouch: boolean;
-  prefersDark: boolean;
+export interface InstallViewModelApi extends Observable<InstallState> {
+  dismiss(): void;
+  prompt(): void;
+}
+
+export interface SettingsState {
+  rows: { label: string; value: string }[];
+  design: { current: DesignSystem; override: DesignSystem | null; options: DesignOption[] };
+  install: InstallState;
+  resetOpen: boolean;
+}
+
+export interface SettingsViewModelApi extends Observable<SettingsState> {
+  setDesign(value: DesignSystem | null): void;
+  requestReset(): void;
+  cancelReset(): void;
+  confirmReset(): void;
+  dismissInstall(): void;
+  promptInstall(): void;
 }
 
 export interface DomainConstants {
@@ -127,9 +147,11 @@ export interface DomainConstants {
 }
 
 export interface KitApi {
-  habits: HabitsApi;
-  install: InstallApi;
-  platform: PlatformApi;
+  today: TodayViewModelApi;
+  stats: StatsViewModelApi;
+  settings: SettingsViewModelApi;
+  install: InstallViewModelApi;
+  appearance: Appearance;
   constants: DomainConstants;
 }
 

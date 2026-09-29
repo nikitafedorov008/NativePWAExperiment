@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Badge,
   Button,
@@ -10,18 +9,16 @@ import {
   Title2,
 } from '@fluentui/react-components';
 import { AddRegular, DeleteRegular, EditRegular } from '@fluentui/react-icons';
-import { useHabits } from '../../../context.ts';
-import type { Habit } from '../../../types.ts';
+import { useInstallViewModel, useTodayViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import HabitFormDialog from '../components/HabitFormDialog.tsx';
 import WeekDots from '../components/WeekDots.tsx';
 
-interface EditorState {
-  habit: Habit | null;
-}
-
 export default function TodayScreen() {
-  const { habits, todayLabel, progress, toggle, toggleToday, statsFor, removeHabit } = useHabits();
-  const [editor, setEditor] = useState<EditorState | null>(null);
+  const today = useTodayViewModel();
+  const install = useInstallViewModel();
+  const { todayLabel, progress, items } = useObservable(today);
+  const { visible } = useObservable(install);
 
   return (
     <section className="fluent-screen">
@@ -30,10 +27,12 @@ export default function TodayScreen() {
           <Caption1 block>Today</Caption1>
           <Title2>{todayLabel}</Title2>
         </div>
-        <Button appearance="primary" icon={<AddRegular />} onClick={() => setEditor({ habit: null })}>
+        <Button appearance="primary" icon={<AddRegular />} onClick={() => today.openEditor(null)}>
           Add habit
         </Button>
       </header>
+
+      {visible && <InstallBannerSlot />}
 
       <Card>
         <div className="habit-row-main" style={{ justifyContent: 'space-between' }}>
@@ -46,68 +45,85 @@ export default function TodayScreen() {
       </Card>
 
       <Card>
-        {habits.length === 0 ? (
+        {items.length === 0 ? (
           <Text size={300}>No habits yet. Add your first one.</Text>
         ) : (
           <ul className="habit-list">
-            {habits.map((habit) => {
-              const stats = statsFor(habit.id);
-              if (!stats) return null;
-              const doneToday = stats.weekStrip.some((day) => day.isToday && day.done);
-              return (
-                <li key={habit.id} className="habit-row">
-                  <div className="habit-row-main">
-                    <Checkbox
-                      checked={doneToday}
-                      onChange={() => toggleToday(habit.id)}
-                      aria-label={`${habit.name}: done today`}
-                    />
-                    <span className="habit-emoji" aria-hidden="true">{habit.emoji}</span>
-                    <button
-                      type="button"
-                      className="habit-name"
-                      aria-label={`Rename ${habit.name}`}
-                      onClick={() => setEditor({ habit })}
-                    >
-                      {habit.name}
-                    </button>
-                    {stats.currentStreak > 0 && (
-                      <Badge appearance="filled" color="brand" aria-label={`${stats.currentStreak} day streak`}>
-                        🔥 {stats.currentStreak}
-                      </Badge>
-                    )}
-                    <Button
-                      appearance="subtle"
-                      size="small"
-                      icon={<EditRegular />}
-                      aria-label={`Rename ${habit.name}`}
-                      onClick={() => setEditor({ habit })}
-                    />
-                    <Button
-                      appearance="subtle"
-                      size="small"
-                      icon={<DeleteRegular />}
-                      aria-label={`Delete ${habit.name}`}
-                      onClick={() => removeHabit(habit.id)}
-                    />
-                  </div>
-                  <WeekDots
-                    days={stats.weekStrip}
-                    onToggle={(date) => toggle(habit.id, date)}
-                    className="habit-week-dots"
+            {items.map((item) => (
+              <li key={item.id} className="habit-row">
+                <div className="habit-row-main">
+                  <Checkbox
+                    checked={item.doneToday}
+                    onChange={() => today.toggleToday(item.id)}
+                    aria-label={`${item.name}: done today`}
                   />
-                </li>
-              );
-            })}
+                  <span className="habit-emoji" aria-hidden="true">{item.emoji}</span>
+                  <button
+                    type="button"
+                    className="habit-name"
+                    aria-label={`Rename ${item.name}`}
+                    onClick={() => today.openEditor(item.id)}
+                  >
+                    {item.name}
+                  </button>
+                  {item.streak > 0 && (
+                    <Badge appearance="filled" color="brand" aria-label={`${item.streak} day streak`}>
+                      🔥 {item.streak}
+                    </Badge>
+                  )}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<EditRegular />}
+                    aria-label={`Rename ${item.name}`}
+                    onClick={() => today.openEditor(item.id)}
+                  />
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<DeleteRegular />}
+                    aria-label={`Delete ${item.name}`}
+                    onClick={() => today.remove(item.id)}
+                  />
+                </div>
+                <WeekDots
+                  days={item.days}
+                  onToggle={(date) => today.toggleDay(item.id, date)}
+                  className="habit-week-dots"
+                />
+              </li>
+            ))}
           </ul>
         )}
       </Card>
 
-      <HabitFormDialog
-        open={editor !== null}
-        habit={editor?.habit ?? null}
-        onClose={() => setEditor(null)}
-      />
+      <HabitFormDialog />
     </section>
+  );
+}
+
+/** The install banner lives in the build via the shared app styles. */
+function InstallBannerSlot() {
+  const install = useInstallViewModel();
+  const state = useObservable(install);
+  return (
+    <Card>
+      <div className="habit-row-main" style={{ justifyContent: 'space-between' }}>
+        <Text weight="semibold">Install Streaks</Text>
+        <Button appearance="subtle" size="small" onClick={install.dismiss}>Dismiss</Button>
+      </div>
+      {state.canPrompt ? (
+        <Button appearance="primary" onClick={install.prompt}>Install app</Button>
+      ) : (
+        <div>
+          <Text size={300} weight="semibold" block>{state.instructions.title}</Text>
+          <ol className="install-steps">
+            {state.instructions.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </Card>
   );
 }

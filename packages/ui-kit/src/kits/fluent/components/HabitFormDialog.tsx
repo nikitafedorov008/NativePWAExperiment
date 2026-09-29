@@ -10,39 +10,34 @@ import {
   Input,
   Label,
 } from '@fluentui/react-components';
-import { useDomainConstants, useHabits } from '../../../context.ts';
-import type { Habit } from '../../../types.ts';
+import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 
-export interface HabitFormDialogProps {
-  open: boolean;
-  habit: Habit | null;
-  onClose(): void;
-}
-
-export default function HabitFormDialog({ open, habit, onClose }: HabitFormDialogProps) {
-  const { addHabit, renameHabit } = useHabits();
+export default function HabitFormDialog() {
+  const today = useTodayViewModel();
+  const { editor } = useObservable(today);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
+  const habit = editor.habit;
   const editing = Boolean(habit);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(DEFAULT_EMOJI);
 
   useEffect(() => {
-    if (open) {
+    if (editor.open) {
       setName(habit?.name ?? '');
       setEmoji(habit?.emoji ?? DEFAULT_EMOJI);
     }
-  }, [open, habit, DEFAULT_EMOJI]);
+  }, [editor.open, habit, DEFAULT_EMOJI]);
 
   const canSubmit = name.trim() !== '';
 
   const submit = (): void => {
     if (!canSubmit) return;
-    const ok = editing && habit ? renameHabit(habit.id, { name, emoji }) : addHabit({ name, emoji });
-    if (ok) onClose();
+    today.submitEditor({ name, emoji });
   };
 
   return (
-    <Dialog open={open} onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
+    <Dialog open={editor.open} onOpenChange={(_, data) => { if (!data.open) today.closeEditor(); }}>
       <DialogSurface>
         <DialogBody>
           <DialogTitle>{editing ? 'Rename habit' : 'New habit'}</DialogTitle>
@@ -82,7 +77,7 @@ export default function HabitFormDialog({ open, habit, onClose }: HabitFormDialo
             </div>
           </DialogContent>
           <DialogActions>
-            <Button appearance="secondary" onClick={onClose}>Cancel</Button>
+            <Button appearance="secondary" onClick={today.closeEditor}>Cancel</Button>
             <Button appearance="primary" disabled={!canSubmit} onClick={submit}>
               {editing ? 'Save' : 'Add habit'}
             </Button>

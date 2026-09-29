@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import {
   Button,
@@ -16,8 +16,8 @@ import {
   Title2,
 } from '@fluentui/react-components';
 import { ArrowClockwiseRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
-import { useHabits, useInstall, usePlatform } from '../../../context.ts';
-import { DESIGN_OPTIONS } from '../../../designSystems.ts';
+import { useSettingsViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import type { DesignSystem } from '../../../types.ts';
 
 function CardTitle({ title, description }: { title: string; description?: string }) {
@@ -39,18 +39,8 @@ function SectionCard({ title, description, children }: { title: string; descript
 }
 
 export default function SettingsScreen() {
-  const { resetAll } = useHabits();
-  const { os, browser, displayMode, designSystem, installed, override, setOverride } = usePlatform();
-  const { canPrompt, promptInstall, outcome, instructions } = useInstall();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const rows: [string, string][] = [
-    ['Platform', os],
-    ['Browser', browser],
-    ['Display mode', displayMode],
-    ['Design system', designSystem],
-    ['Install status', installed ? 'Installed' : 'Browser tab'],
-  ];
+  const settings = useSettingsViewModel();
+  const { rows, design, install, resetOpen } = useObservable(settings);
 
   return (
     <section className="fluent-screen">
@@ -59,12 +49,12 @@ export default function SettingsScreen() {
       <Card>
         <CardTitle title="Platform" description="What the app detected at start" />
         <dl className="info-list">
-          {rows.map(([label, value], index) => (
-            <Fragment key={label}>
+          {rows.map((row, index) => (
+            <Fragment key={row.label}>
               {index > 0 && <Divider />}
               <div className="info-row">
-                <dt>{label}</dt>
-                <dd>{value}</dd>
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
               </div>
             </Fragment>
           ))}
@@ -76,10 +66,12 @@ export default function SettingsScreen() {
         description="Force a design language to preview it in this tab. Changing it reloads the page."
       >
         <RadioGroup
-          value={override ?? 'auto'}
-          onChange={(_, data) => setOverride(data.value === 'auto' ? null : (data.value as DesignSystem))}
+          value={design.override ?? 'auto'}
+          onChange={(_, data) =>
+            settings.setDesign(data.value === 'auto' ? null : (data.value as DesignSystem))
+          }
         >
-          {DESIGN_OPTIONS.map((option) => (
+          {design.options.map((option) => (
             <Radio key={option.value ?? 'auto'} value={option.value ?? 'auto'} label={option.label} />
           ))}
         </RadioGroup>
@@ -87,19 +79,19 @@ export default function SettingsScreen() {
 
       <SectionCard
         title="Install app"
-        description={installed ? 'Already installed' : 'Get the native look for your platform.'}
+        description={install.installed ? 'Already installed' : 'Get the native look for your platform.'}
       >
-        {installed ? null : outcome === 'accepted' ? (
+        {install.installed ? null : install.outcome === 'accepted' ? (
           <Text size={300}>Installed — open Streaks from your taskbar / Start menu.</Text>
-        ) : canPrompt ? (
-          <Button appearance="primary" icon={<ArrowDownloadRegular />} onClick={() => void promptInstall()}>
+        ) : install.canPrompt ? (
+          <Button appearance="primary" icon={<ArrowDownloadRegular />} onClick={settings.promptInstall}>
             Install app
           </Button>
         ) : (
           <div>
-            <Text size={300} weight="semibold" block>{instructions.title}</Text>
+            <Text size={300} weight="semibold" block>{install.instructions.title}</Text>
             <ol className="install-steps">
-              {instructions.steps.map((step) => (
+              {install.instructions.steps.map((step) => (
                 <li key={step}>{step}</li>
               ))}
             </ol>
@@ -113,11 +105,11 @@ export default function SettingsScreen() {
           appearance="secondary"
           icon={<ArrowClockwiseRegular />}
           className="destructive-text"
-          onClick={() => setConfirmOpen(true)}
+          onClick={settings.requestReset}
         >
           Reset data
         </Button>
-        <Dialog open={confirmOpen} onOpenChange={(_, data) => setConfirmOpen(data.open)}>
+        <Dialog open={resetOpen} onOpenChange={(_, data) => { if (!data.open) settings.cancelReset(); }}>
           <DialogSurface>
             <DialogBody>
               <DialogTitle>Reset all data?</DialogTitle>
@@ -125,15 +117,8 @@ export default function SettingsScreen() {
                 Your habits and completions will be deleted and replaced with the four demo habits.
               </DialogContent>
               <DialogActions>
-                <Button appearance="secondary" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-                <Button
-                  appearance="primary"
-                  className="destructive-text"
-                  onClick={() => {
-                    resetAll();
-                    setConfirmOpen(false);
-                  }}
-                >
+                <Button appearance="secondary" onClick={settings.cancelReset}>Cancel</Button>
+                <Button appearance="primary" className="destructive-text" onClick={settings.confirmReset}>
                   Reset
                 </Button>
               </DialogActions>

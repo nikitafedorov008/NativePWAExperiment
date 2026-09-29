@@ -1,14 +1,15 @@
 /**
  * Code kit — custom / shadcn / yaru are drawn by the same widgets; the design
- * language only changes tokens and behavior inside theme.tsx.
+ * language only changes tokens and behavior inside theme.tsx. The shell is a
+ * dumb view: navigation state is local, everything else comes from view models.
  */
 import { useState } from 'react';
 import { CalendarCheck, ChartColumn, Plus, Settings as SettingsIcon } from 'lucide-react';
-import { useHabits } from '../../context.ts';
+import { useTodayViewModel } from '../../context.ts';
+import { useObservable } from '../../hooks.ts';
 import { ThemeProvider, useTheme } from '../../theme.tsx';
 import { AppBar, Fab, NavigationBar, Scaffold } from '../../widgets.tsx';
 import type { NavItem } from '../../widgets.tsx';
-import type { Habit } from '../../types.ts';
 import HabitFormDialog from './components/HabitFormDialog.tsx';
 import Settings from './screens/Settings.tsx';
 import Stats from './screens/Stats.tsx';
@@ -22,18 +23,13 @@ const NAV_ITEMS: NavItem[] = [
 
 const TITLES: Record<string, string> = { today: 'Today', stats: 'Stats', settings: 'Settings' };
 
-/** Editor state shared by the screens: which habit (or none = create) is open. */
-export interface EditorState {
-  habit: Habit | null;
-}
-
 function Shell() {
   const t = useTheme();
-  const { todayLabel } = useHabits();
+  const today = useTodayViewModel();
+  const { todayLabel } = useObservable(today);
   const [screen, setScreen] = useState('today');
-  const [editor, setEditor] = useState<EditorState | null>(null);
 
-  const openAdd = (): void => setEditor({ habit: null });
+  const openAdd = (): void => today.openEditor(null);
 
   return (
     <>
@@ -60,16 +56,12 @@ function Shell() {
         bottomBar={<NavigationBar items={NAV_ITEMS} active={screen} onChange={setScreen} />}
         fab={t.behavior.fab && screen === 'today' ? <Fab icon={Plus} label="Add habit" onClick={openAdd} /> : null}
       >
-        {screen === 'today' && <Today onOpenEditor={setEditor} />}
+        {screen === 'today' && <Today />}
         {screen === 'stats' && <Stats />}
         {screen === 'settings' && <Settings />}
       </Scaffold>
 
-      <HabitFormDialog
-        open={editor !== null}
-        habit={editor?.habit ?? null}
-        onClose={() => setEditor(null)}
-      />
+      <HabitFormDialog />
     </>
   );
 }

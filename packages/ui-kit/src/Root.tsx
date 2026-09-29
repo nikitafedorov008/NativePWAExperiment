@@ -10,7 +10,7 @@
  */
 import { lazy, Suspense } from 'react';
 import type { ComponentType, LazyExoticComponent } from 'react';
-import { usePlatform } from './context.ts';
+import { useAppearance } from './context.ts';
 import { DEFAULT_DESIGN, isDesignSystem } from './designSystems.ts';
 import Splash from './Splash.tsx';
 import type { DesignSystem } from './types.ts';
@@ -25,7 +25,7 @@ const IMPLS: Record<DesignSystem, LazyExoticComponent<ComponentType>> = {
 };
 
 export default function Root() {
-  const { designSystem } = usePlatform();
+  const { designSystem } = useAppearance();
   const Impl = isDesignSystem(designSystem) ? IMPLS[designSystem] : IMPLS[DEFAULT_DESIGN];
   return (
     <Suspense fallback={<Splash />}>

@@ -1,57 +1,51 @@
 import { Pencil, Trash2 } from 'lucide-react';
-import { useHabits, useInstall } from '../../../context.ts';
+import { useInstallViewModel, useTodayViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Badge, Card, Checkbox, Divider, IconButton, ProgressBar, Text } from '../../../widgets.tsx';
-import type { DateKey, Habit, HabitStats } from '../../../types.ts';
+import type { TodayItem } from '../../../types.ts';
 import InstallBanner from '../components/InstallBanner.tsx';
 import WeekDots from '../components/WeekDots.tsx';
 
-interface HabitTileProps {
-  habit: Habit;
-  stats: HabitStats;
-  onToggleDay(date: DateKey): void;
-  onToggleToday(): void;
-  onRename(): void;
-  onRemove(): void;
-}
-
-function HabitTile({ habit, stats, onToggleDay, onToggleToday, onRename, onRemove }: HabitTileProps) {
-  const doneToday = stats.weekStrip.some((day) => day.isToday && day.done);
+function HabitTile({ item }: { item: TodayItem }) {
+  const today = useTodayViewModel();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Checkbox checked={doneToday} onChange={onToggleToday} label={`${habit.name}: done today`} />
-        <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{habit.emoji}</span>
+        <Checkbox
+          checked={item.doneToday}
+          onChange={() => today.toggleToday(item.id)}
+          label={`${item.name}: done today`}
+        />
+        <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
         <button
           type="button" className="pressable"
-          aria-label={`Rename ${habit.name}`} onClick={onRename}
+          aria-label={`Rename ${item.name}`} onClick={() => today.openEditor(item.id)}
           style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left', borderRadius: 6, padding: '2px 0' }}
         >
           <Text variant="body" style={{ fontWeight: 550, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {habit.name}
+            {item.name}
           </Text>
           <Pencil size={12} style={{ opacity: 0.55, flexShrink: 0 }} aria-hidden="true" />
         </button>
-        {stats.currentStreak > 0 && <Badge>🔥 {stats.currentStreak}</Badge>}
-        <IconButton icon={Trash2} label={`Delete ${habit.name}`} onClick={onRemove} />
+        {item.streak > 0 && <Badge>🔥 {item.streak}</Badge>}
+        <IconButton icon={Trash2} label={`Delete ${item.name}`} onClick={() => today.remove(item.id)} />
       </div>
-      <WeekDots days={stats.weekStrip} onToggle={onToggleDay} />
+      <WeekDots days={item.days} onToggle={(date) => today.toggleDay(item.id, date)} />
     </div>
   );
 }
 
-export interface TodayProps {
-  onOpenEditor(editor: { habit: Habit | null }): void;
-}
-
-export default function Today({ onOpenEditor }: TodayProps) {
+export default function Today() {
   const t = useTheme();
-  const { habits, progress, removeHabit, toggle, toggleToday, statsFor } = useHabits();
-  const { installed, dismissed } = useInstall();
+  const today = useTodayViewModel();
+  const install = useInstallViewModel();
+  const { progress, items } = useObservable(today);
+  const { visible } = useObservable(install);
 
   return (
     <>
-      {!installed && !dismissed && <InstallBanner />}
+      {visible && <InstallBanner />}
 
       <Card style={{ gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -65,30 +59,19 @@ export default function Today({ onOpenEditor }: TodayProps) {
       </Card>
 
       <Card style={{ padding: '4px 16px' }}>
-        {habits.length === 0 ? (
+        {items.length === 0 ? (
           <Text variant="body" style={{ color: t.color.text2, textAlign: 'center', padding: '20px 0' }}>
             No habits yet. Add your first one.
           </Text>
         ) : (
-          habits.map((habit, index) => {
-            const stats = statsFor(habit.id);
-            if (!stats) return null;
-            return (
-              <div key={habit.id}>
-                {index > 0 && <Divider />}
-                <div style={{ padding: '12px 0' }}>
-                  <HabitTile
-                    habit={habit}
-                    stats={stats}
-                    onToggleToday={() => toggleToday(habit.id)}
-                    onToggleDay={(date) => toggle(habit.id, date)}
-                    onRename={() => onOpenEditor({ habit })}
-                    onRemove={() => removeHabit(habit.id)}
-                  />
-                </div>
+          items.map((item, index) => (
+            <div key={item.id}>
+              {index > 0 && <Divider />}
+              <div style={{ padding: '12px 0' }}>
+                <HabitTile item={item} />
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </Card>
     </>

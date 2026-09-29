@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
-import { useHabits, useInstall, usePlatform } from '../../../context.ts';
-import { DESIGN_OPTIONS } from '../../../designSystems.ts';
+import { useSettingsViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Button, Card, Dialog, ListTile, Radio, Text } from '../../../widgets.tsx';
-import type { DesignSystem } from '../../../types.ts';
 
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children?: ReactNode }) {
   return (
@@ -21,25 +19,25 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 
 function InstallSection() {
   const t = useTheme();
-  const { canPrompt, promptInstall, outcome, instructions } = useInstall();
-  const { installed } = usePlatform();
+  const settings = useSettingsViewModel();
+  const { install } = useObservable(settings);
 
-  if (installed) {
+  if (install.installed) {
     return <SectionCard title="Install app" subtitle="Already installed — you are using the native look." />;
   }
   return (
     <SectionCard title="Install app" subtitle="Get the native look for your platform.">
-      {outcome === 'accepted' ? (
+      {install.outcome === 'accepted' ? (
         <Text variant="body" style={{ fontWeight: 550 }}>
           Installed — open Streaks from your home screen / dock.
         </Text>
-      ) : canPrompt ? (
-        <Button icon={Download} onClick={() => void promptInstall()}>Install app</Button>
+      ) : install.canPrompt ? (
+        <Button icon={Download} onClick={settings.promptInstall}>Install app</Button>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <Text variant="label">{instructions.title}</Text>
+          <Text variant="label">{install.instructions.title}</Text>
           <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {instructions.steps.map((step) => (
+            {install.instructions.steps.map((step) => (
               <li key={step}><Text variant="caption" style={{ color: t.color.text2 }}>{step}</Text></li>
             ))}
           </ol>
@@ -51,26 +49,17 @@ function InstallSection() {
 
 export default function Settings() {
   const t = useTheme();
-  const { resetAll } = useHabits();
-  const { os, browser, displayMode, designSystem, installed, override, setOverride } = usePlatform();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const rows: [string, string][] = [
-    ['Platform', os],
-    ['Browser', browser],
-    ['Display mode', displayMode],
-    ['Design system', designSystem],
-    ['Install status', installed ? 'Installed' : 'Browser tab'],
-  ];
+  const settings = useSettingsViewModel();
+  const { rows, design, resetOpen } = useObservable(settings);
 
   return (
     <>
       <SectionCard title="Platform" subtitle="What the app detected at start">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {rows.map(([label, value], index) => (
-            <div key={label}>
+          {rows.map((row, index) => (
+            <div key={row.label}>
               {index > 0 && <div style={{ height: 1, background: t.color.divider }} />}
-              <ListTile title={label} trailing={<Text variant="body" style={{ fontWeight: 550 }}>{value}</Text>} />
+              <ListTile title={row.label} trailing={<Text variant="body" style={{ fontWeight: 550 }}>{row.value}</Text>} />
             </div>
           ))}
         </div>
@@ -81,14 +70,14 @@ export default function Settings() {
         subtitle="Force a design language to preview it in this tab. Changing it reloads the page."
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {DESIGN_OPTIONS.map((option) => {
+          {design.options.map((option) => {
             const value = option.value ?? 'auto';
             return (
               <Radio
                 key={value}
                 label={option.label}
-                checked={(override ?? 'auto') === value}
-                onChange={() => setOverride(option.value as DesignSystem | null)}
+                checked={(design.override ?? 'auto') === value}
+                onChange={() => settings.setDesign(option.value)}
               />
             );
           })}
@@ -99,7 +88,7 @@ export default function Settings() {
 
       <SectionCard title="Reset data" subtitle="Clear everything and restore the demo habits.">
         <div>
-          <Button variant="danger" icon={RotateCcw} onClick={() => setConfirmOpen(true)}>
+          <Button variant="danger" icon={RotateCcw} onClick={settings.requestReset}>
             Reset data
           </Button>
         </div>
@@ -108,21 +97,13 @@ export default function Settings() {
       <SectionCard title="About" subtitle="One domain layer, six design languages — Cupertino, Material, Fluent, Yaru, custom, shadcn." />
 
       <Dialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        open={resetOpen}
+        onClose={settings.cancelReset}
         title="Reset all data?"
         actions={
           <>
-            <Button variant="text" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                resetAll();
-                setConfirmOpen(false);
-              }}
-            >
-              Reset
-            </Button>
+            <Button variant="text" onClick={settings.cancelReset}>Cancel</Button>
+            <Button variant="danger" onClick={settings.confirmReset}>Reset</Button>
           </>
         }
       >

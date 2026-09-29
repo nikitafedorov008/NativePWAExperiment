@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useDomainConstants, useHabits } from '../../../context.ts';
+import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Button, Dialog, Text, TextInput } from '../../../widgets.tsx';
-import type { Habit } from '../../../types.ts';
 
 function EmojiPicker({
   value,
@@ -42,42 +42,42 @@ function EmojiPicker({
   );
 }
 
-export interface HabitFormDialogProps {
-  open: boolean;
-  habit: Habit | null;
-  onClose(): void;
-}
-
-export default function HabitFormDialog({ open, habit, onClose }: HabitFormDialogProps) {
-  const { addHabit, renameHabit } = useHabits();
+/**
+ * The habit form is a dumb view over the Today view model: open/close state and
+ * the habit being edited both live in the view model, the form only holds the
+ * in-progress text until it is submitted.
+ */
+export default function HabitFormDialog() {
+  const today = useTodayViewModel();
+  const { editor } = useObservable(today);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
+  const habit = editor.habit;
   const editing = Boolean(habit);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(DEFAULT_EMOJI);
 
   useEffect(() => {
-    if (open) {
+    if (editor.open) {
       setName(habit?.name ?? '');
       setEmoji(habit?.emoji ?? DEFAULT_EMOJI);
     }
-  }, [open, habit, DEFAULT_EMOJI]);
+  }, [editor.open, habit, DEFAULT_EMOJI]);
 
   const canSubmit = name.trim() !== '';
 
   const submit = (): void => {
     if (!canSubmit) return;
-    const ok = editing && habit ? renameHabit(habit.id, { name, emoji }) : addHabit({ name, emoji });
-    if (ok) onClose();
+    today.submitEditor({ name, emoji });
   };
 
   return (
     <Dialog
-      open={open}
-      onClose={onClose}
+      open={editor.open}
+      onClose={today.closeEditor}
       title={editing ? 'Rename habit' : 'New habit'}
       actions={
         <>
-          <Button variant="text" onClick={onClose}>Cancel</Button>
+          <Button variant="text" onClick={today.closeEditor}>Cancel</Button>
           <Button onClick={submit} disabled={!canSubmit}>{editing ? 'Save' : 'Add habit'}</Button>
         </>
       }

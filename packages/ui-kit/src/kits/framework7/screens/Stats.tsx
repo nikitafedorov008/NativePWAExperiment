@@ -1,20 +1,10 @@
 import { Block, BlockTitle, List, ListItem } from 'framework7-react';
-import { useHabits } from '../../../context.ts';
-import type { BestStreakHabit } from '../../../types.ts';
+import { useStatsViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import WeekDots from '../components/WeekDots.tsx';
 
-const bestStreakLabel = (best: BestStreakHabit | null): string =>
-  best ? `${best.emoji} ${best.name} · ${best.bestStreak} days` : '—';
-
 export default function StatsScreen() {
-  const { habits, overall, statsFor } = useHabits();
-
-  const tiles: { label: string; value: string | number }[] = [
-    { label: 'Total completions', value: overall.totalCompletions },
-    { label: 'Best streak', value: bestStreakLabel(overall.bestStreakHabit) },
-    { label: 'Perfect days (7d)', value: overall.perfectDays7 },
-    { label: 'Completion rate (7d)', value: `${Math.round(overall.completionRate7 * 100)}%` },
-  ];
+  const { tiles, items } = useObservable(useStatsViewModel());
 
   return (
     <>
@@ -28,26 +18,20 @@ export default function StatsScreen() {
       </div>
 
       <BlockTitle>Habits</BlockTitle>
-      {habits.length === 0 ? (
+      {items.length === 0 ? (
         <Block strong className="empty-hint">No habits yet.</Block>
       ) : (
         <List strong inset>
-          {habits.map((habit) => {
-            const stats = statsFor(habit.id);
-            if (!stats) return null;
-            return (
-              <ListItem key={habit.id}>
-                <span slot="media" className="habit-emoji-lg" aria-hidden="true">{habit.emoji}</span>
-                <span slot="title">{habit.name}</span>
-                <div slot="inner" className="habit-week-wrap">
-                  <span className="habit-sub">
-                    🔥 {stats.currentStreak} current · {stats.bestStreak} best · {stats.doneCount} done
-                  </span>
-                  <WeekDots days={stats.weekStrip} />
-                </div>
-              </ListItem>
-            );
-          })}
+          {items.map((item) => (
+            <ListItem key={item.id}>
+              <span slot="media" className="habit-emoji-lg" aria-hidden="true">{item.emoji}</span>
+              <span slot="title">{item.name}</span>
+              <div slot="inner" className="habit-week-wrap">
+                <span className="habit-sub">{item.summary}</span>
+                <WeekDots days={item.days} />
+              </div>
+            </ListItem>
+          ))}
         </List>
       )}
     </>

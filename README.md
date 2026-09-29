@@ -31,21 +31,36 @@ You can force any language for a preview: `?design=cupertino|material|fluent|yar
   <img src="docs/assets/readme-architecture.png" alt="Architecture: one domain layer, swappable UI kits" width="900" />
 </p>
 
-Everything is **TypeScript** in strict mode (`npm run typecheck`), and the layers are deliberately separable:
+Everything is **TypeScript** in strict mode (`npm run typecheck`), and the code is layered the way
+[Flutter's architecture guide](https://docs.flutter.dev/app-architecture/guide) prescribes — UI
+(views + view models), Data (repositories + services) and Domain (entities + use cases), wired
+together in a composition root. See [docs/architecture.md](docs/architecture.md) for the full mapping:
 
-- **`src/domain`** — pure habit logic: a reducer, versioned localStorage persistence, streak/progress selectors, and the types they work on (`Habit`, `DateKey`, `HabitStats`). Zero UI imports, zero DOM, fully unit-tested.
-- **`src/platform`** — detects OS, browser, display mode and install status; owns the captured `beforeinstallprompt` flow with per-browser install instructions; feeds the detector's answer into the kit's design-language resolver.
-- **`packages/ui-kit`** — a workspace package with all UI: the six design languages, the adaptive switcher, and the widget kit. It never imports application code — the app injects the domain API into it (`src/app/App.tsx`) and TypeScript checks that object against the kit's `KitApi` contract, so the package can be lifted into another project as-is. See [its README](packages/ui-kit/README.md).
-- **`src/app`** — the composition root: builds that API object (habits, install flow, platform info, constants) and mounts the kit.
+- **`src/domain`** — entities (`Habit`, `DateKey`), a `Result` type instead of exceptions, and the use
+  cases that own the rules (a name is required, a future day cannot be completed, streaks and
+  seven-day summaries are derived here). No React, no DOM, fully unit-tested.
+- **`src/data`** — services wrap one external thing each (localStorage, the clock and its midnight
+  rollover, device detection, the install event, confetti); repositories are the single source of
+  truth and re-publish an immutable snapshot on every change.
+- **`src/ui`** — one view model per screen: it reads repositories, turns entities into
+  presentation-ready items and exposes commands. Views only render state and call them.
+- **`packages/ui-kit`** — the design system and the views for all six design languages. It never
+  imports application code: the app injects its view models (`src/app/App.tsx`) and TypeScript checks
+  that object against the kit's `KitApi` contract. See [its README](packages/ui-kit/README.md).
+- **`src/app/services.tsx`** — the composition root: services → repositories → view models, built once.
 
 ### Inside the kit
 
 | Kind | Design languages | How |
 |---|---|---|
 | Native kits | `cupertino`, `material`, `fluent` | real libraries — Framework7 renders one component tree in either Apple or Google language; Fluent UI styles itself from design tokens |
-| Code kit | `yaru`, `custom`, `shadcn` | a small Flutter-style widget set styled *only* from tokens in `packages/ui-kit/src/theme.jsx` — adding a language there is a palette plus a behavior block, no new components |
+| Code kit | `yaru`, `custom`, `shadcn` | a small Flutter-style widget set styled *only* from tokens in `packages/ui-kit/src/theme.tsx` — adding a language there is a palette plus a behavior block, no new components |
 
-All habit-specific styling (check circles, week strips, emoji grid, stat tiles) lives in a single file, `packages/ui-kit/src/appStyles.js`, injected as one stylesheet and scoped per kit. There are no `.css` files in the app or the package.
+View models are written once and views exist per design language, so a single `HabitStatsView` renders
+as an iOS list, a Material list or a Fluent card without any of them duplicating a rule. All
+habit-specific styling (check circles, week strips, emoji grid, stat tiles) lives in a single file,
+`packages/ui-kit/src/appStyles.ts`, injected as one stylesheet and scoped per kit. There are no `.css`
+files in the app or the package.
 
 ### What makes it feel native
 

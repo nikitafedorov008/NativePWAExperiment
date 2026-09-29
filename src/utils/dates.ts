@@ -1,8 +1,9 @@
 /**
- * Date helpers. Everything works on local `YYYY-MM-DD` keys so that no time
- * zone or DST edge case can shift "today" — the app never stores Date objects.
+ * utils/ — small framework-free helpers, the analog of Flutter's `lib/utils/`.
+ * Dates work on local `YYYY-MM-DD` keys so no time zone or DST edge case can
+ * shift "today"; the app never stores Date objects.
  */
-import type { DateKey } from './model.ts';
+import type { DateKey } from '../domain/models/habit.ts';
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 

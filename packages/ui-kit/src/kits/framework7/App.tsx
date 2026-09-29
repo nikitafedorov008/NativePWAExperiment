@@ -3,13 +3,13 @@
  * Framework7 renders one component tree in either native language depending on
  * the `theme` prop — the design languages' own names map to F7's theme ids in
  * ./cupertino.tsx and ./material.tsx, so nothing else in the app sees them.
- * Screens live in ./screens, custom widget styles come from ../../appStyles.ts.
+ * Views read view models; the shell itself only owns which tab is open.
  */
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { App, Fab, Icon, Link, Navbar, NavRight, Page, Toolbar, View } from 'framework7-react';
 import { injectAppStyles } from '../../appStyles.ts';
-import { useHabits } from '../../context.ts';
-import type { Habit } from '../../types.ts';
+import { useTodayViewModel } from '../../context.ts';
+import { useObservable } from '../../hooks.ts';
 import HabitFormPopup from './screens/HabitFormPopup.tsx';
 import SettingsScreen from './screens/Settings.tsx';
 import StatsScreen from './screens/Stats.tsx';
@@ -33,20 +33,10 @@ const TABS: Tab[] = [
   { id: 'settings', title: 'Settings', iconIos: 'f7:gear_alt_fill', iconMaterial: 'settings' },
 ];
 
-interface EditorState {
-  open: boolean;
-  habit: Habit | null;
-}
-
 export default function F7Root({ theme }: { theme: Framework7Theme }) {
-  const { todayLabel } = useHabits();
+  const today = useTodayViewModel();
+  const { todayLabel } = useObservable(today);
   const [screen, setScreen] = useState('today');
-  const [editor, setEditor] = useState<EditorState>({ open: false, habit: null });
-  const openEditor = useCallback(
-    (habit: Habit | null = null) => setEditor({ open: true, habit }),
-    [],
-  );
-  const closeEditor = useCallback(() => setEditor((prev) => ({ ...prev, open: false })), []);
 
   return (
     <App theme={theme} darkMode="auto" colors={{ primary: '#0057ff' }} name="Streaks">
@@ -62,13 +52,13 @@ export default function F7Root({ theme }: { theme: Framework7Theme }) {
                   iconIos="f7:plus"
                   iconMaterial="add"
                   aria-label="Add habit"
-                  onClick={() => openEditor()}
+                  onClick={() => today.openEditor(null)}
                 />
               </NavRight>
             )}
           </Navbar>
 
-          {screen === 'today' && <TodayScreen onOpenEditor={openEditor} />}
+          {screen === 'today' && <TodayScreen />}
           {screen === 'stats' && <StatsScreen />}
           {screen === 'settings' && <SettingsScreen />}
 
@@ -87,14 +77,14 @@ export default function F7Root({ theme }: { theme: Framework7Theme }) {
           </Toolbar>
 
           {theme === 'md' && screen === 'today' && (
-            <Fab position="right-bottom" onClick={() => openEditor()}>
+            <Fab position="right-bottom" onClick={() => today.openEditor(null)}>
               <Icon ios="f7:plus" md="material:add" />
             </Fab>
           )}
         </Page>
       </View>
 
-      <HabitFormPopup open={editor.open} habit={editor.habit} onClose={closeEditor} />
+      <HabitFormPopup />
     </App>
   );
 }

@@ -1,29 +1,30 @@
 /**
- * App composition root for the UI.
+ * app/App — the UI composition root.
  *
- * The ui-kit package knows nothing about this app: everything its screens need
- * is injected here — the habit domain state, the install flow, platform info
- * and the domain constants the forms use. The `KitApi` type is the contract;
- * TypeScript checks that this object satisfies it. Swap the kit for another
- * one and only this file changes.
+ * The ui-kit package knows nothing about this app: the view models built in
+ * app/services.tsx (plus appearance and the domain constants the forms need)
+ * are injected here, and TypeScript checks the object against the kit's
+ * `KitApi` contract. Swapping the kit — or reusing it in another project —
+ * only touches this file.
  */
 import { KitApiProvider, Root } from '@native-pwa-experiment/ui-kit';
 import type { KitApi } from '@native-pwa-experiment/ui-kit';
-import { useHabits } from '../domain/habits/HabitsContext.tsx';
-import { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } from '../domain/habits/model.ts';
-import { usePlatform } from '../platform/PlatformContext.tsx';
-import { useInstallPrompt } from '../platform/useInstallPrompt.ts';
+import { useNotifier } from '../ui/core/hooks.ts';
+import { useServices } from './services.tsx';
 
 export default function App() {
-  const habits = useHabits();
-  const install = useInstallPrompt();
-  const platform = usePlatform();
+  const { today, stats, settings, install, design, constants } = useServices();
+  // Subscribed, not snapshotted: the design language can change at boot (URL
+  // override), when the app is installed, or when the OS scheme flips.
+  const appearance = useNotifier(design);
 
   const api: KitApi = {
-    habits,
+    today,
+    stats,
+    settings,
     install,
-    platform,
-    constants: { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH },
+    appearance,
+    constants,
   };
 
   return (

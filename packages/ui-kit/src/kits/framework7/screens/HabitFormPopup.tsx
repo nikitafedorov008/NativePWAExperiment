@@ -1,42 +1,37 @@
 import { useEffect, useState } from 'react';
 import { Block, List, ListInput, Link, NavLeft, NavRight, NavTitle, Navbar, Page, Popup } from 'framework7-react';
-import { useDomainConstants, useHabits } from '../../../context.ts';
-import type { Habit } from '../../../types.ts';
+import { useDomainConstants, useTodayViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 
-export interface HabitFormPopupProps {
-  open: boolean;
-  habit: Habit | null;
-  onClose(): void;
-}
-
-export default function HabitFormPopup({ open, habit, onClose }: HabitFormPopupProps) {
-  const { addHabit, renameHabit } = useHabits();
+export default function HabitFormPopup() {
+  const today = useTodayViewModel();
+  const { editor } = useObservable(today);
   const { DEFAULT_EMOJI, EMOJI_PRESETS, NAME_MAX_LENGTH } = useDomainConstants();
+  const habit = editor.habit;
   const editing = Boolean(habit);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(DEFAULT_EMOJI);
 
   useEffect(() => {
-    if (open) {
+    if (editor.open) {
       setName(habit?.name ?? '');
       setEmoji(habit?.emoji ?? DEFAULT_EMOJI);
     }
-  }, [open, habit, DEFAULT_EMOJI]);
+  }, [editor.open, habit, DEFAULT_EMOJI]);
 
   const canSubmit = name.trim() !== '';
 
   const submit = (): void => {
     if (!canSubmit) return;
-    const ok = editing && habit ? renameHabit(habit.id, { name, emoji }) : addHabit({ name, emoji });
-    if (ok) onClose();
+    today.submitEditor({ name, emoji });
   };
 
   return (
-    <Popup opened={open} closeOnEscape onPopupClosed={onClose}>
+    <Popup opened={editor.open} closeOnEscape onPopupClosed={today.closeEditor}>
       <Page>
         <Navbar>
           <NavLeft>
-            <Link onClick={onClose}>Cancel</Link>
+            <Link onClick={today.closeEditor}>Cancel</Link>
           </NavLeft>
           <NavTitle>{editing ? 'Rename habit' : 'New habit'}</NavTitle>
           <NavRight>

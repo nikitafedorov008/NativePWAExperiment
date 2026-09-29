@@ -1,39 +1,23 @@
-import { useHabits } from '../../../context.ts';
+import { useStatsViewModel } from '../../../context.ts';
+import { useObservable } from '../../../hooks.ts';
 import { useTheme } from '../../../theme.tsx';
 import { Card, Text } from '../../../widgets.tsx';
-import type { BestStreakHabit } from '../../../types.ts';
 import WeekDots from '../components/WeekDots.tsx';
-
-const bestStreakLabel = (best: BestStreakHabit | null): string =>
-  best ? `${best.emoji} ${best.name} · ${best.bestStreak} days` : '—';
-
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card style={{ gap: 3, padding: 14 }}>
-      <Text variant="caption">{label}</Text>
-      <Text variant="headline" style={{ fontSize: 19, fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {value}
-      </Text>
-    </Card>
-  );
-}
 
 export default function Stats() {
   const t = useTheme();
-  const { habits, overall, statsFor } = useHabits();
-
-  const tiles: { label: string; value: string | number }[] = [
-    { label: 'Total completions', value: overall.totalCompletions },
-    { label: 'Best streak', value: bestStreakLabel(overall.bestStreakHabit) },
-    { label: 'Perfect days (7d)', value: overall.perfectDays7 },
-    { label: 'Completion rate (7d)', value: `${Math.round(overall.completionRate7 * 100)}%` },
-  ];
+  const { tiles, items } = useObservable(useStatsViewModel());
 
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         {tiles.map((tile) => (
-          <StatTile key={tile.label} label={tile.label} value={tile.value} />
+          <Card key={tile.label} style={{ gap: 3, padding: 14 }}>
+            <Text variant="caption">{tile.label}</Text>
+            <Text variant="headline" style={{ fontSize: 19, fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {tile.value}
+            </Text>
+          </Card>
         ))}
       </div>
 
@@ -42,32 +26,28 @@ export default function Stats() {
           <Text variant="headline">Habits</Text>
           <Text variant="caption" style={{ display: 'block' }}>Streaks and the last 7 days</Text>
         </div>
-        {habits.length === 0 ? (
+        {items.length === 0 ? (
           <Text variant="body" style={{ textAlign: 'center', padding: '20px 0', opacity: 0.55 }}>No habits yet.</Text>
         ) : (
-          habits.map((habit, index) => {
-            const stats = statsFor(habit.id);
-            if (!stats) return null;
-            return (
-              <div key={habit.id} style={{ padding: '12px 4px' }}>
-                {index > 0 && <div style={{ height: 1, background: t.color.divider, marginBottom: 12 }} />}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{habit.emoji}</span>
-                    <Text variant="body" style={{ fontWeight: 550, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {habit.name}
-                    </Text>
-                  </div>
-                  <div style={{ paddingLeft: 34 }}>
-                    <Text variant="caption" style={{ display: 'block', marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
-                      🔥 {stats.currentStreak} current · {stats.bestStreak} best · {stats.doneCount} done
-                    </Text>
-                    <WeekDots days={stats.weekStrip} />
-                  </div>
+          items.map((item, index) => (
+            <div key={item.id} style={{ padding: '12px 4px' }}>
+              {index > 0 && <div style={{ height: 1, background: t.color.divider, marginBottom: 12 }} />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
+                  <Text variant="body" style={{ fontWeight: 550, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.name}
+                  </Text>
+                </div>
+                <div style={{ paddingLeft: 34 }}>
+                  <Text variant="caption" style={{ display: 'block', marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
+                    {item.summary}
+                  </Text>
+                  <WeekDots days={item.days} />
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </Card>
     </>

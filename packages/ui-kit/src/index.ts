@@ -5,20 +5,29 @@
  *
  *   import { KitApiProvider, Root } from '@native-pwa-experiment/ui-kit';
  *
- *   <KitApiProvider api={{ habits, install, platform, constants }}>
+ *   <KitApiProvider api={{ today, stats, settings, install, appearance, constants }}>
  *     <Root />
  *   </KitApiProvider>
  *
- * `Root` renders the design language the platform layer resolved and lazily
- * loads exactly one implementation (Framework7, Fluent UI, or the code kit).
- * `KitApi` is the contract the host object must satisfy — it is checked by
- * TypeScript, and the kit never imports application code.
+ * The kit renders whatever design language `appearance.designSystem` names and
+ * lazily loads exactly one implementation (Framework7, Fluent UI, or the code
+ * kit). `KitApi` is the contract the host object must satisfy — it is checked
+ * by TypeScript, and the kit never imports application code.
  */
 export { default as Root } from './Root.tsx';
 export { default as Splash } from './Splash.tsx';
 
 export { KitApiProvider } from './KitApiProvider.tsx';
-export { useKitApi, useHabits, useInstall, usePlatform, useDomainConstants } from './context.ts';
+export {
+  useKitApi,
+  useTodayViewModel,
+  useStatsViewModel,
+  useSettingsViewModel,
+  useInstallViewModel,
+  useAppearance,
+  useDomainConstants,
+} from './context.ts';
+export { useObservable } from './hooks.ts';
 
 export {
   DESIGN_SYSTEMS,
@@ -59,17 +68,22 @@ export type {
   CodeLanguage,
   DesignLanguageDescriptor,
   DesignOption,
+  Appearance,
   DateKey,
   Habit,
   HabitInput,
-  HabitsApi,
   WeekDay,
-  HabitStats,
-  DayProgress,
-  BestStreakHabit,
-  OverallStats,
-  InstallApi,
-  PlatformApi,
+  Observable,
+  TodayItem,
+  TodayState,
+  TodayViewModelApi,
+  StatsItem,
+  StatsState,
+  StatsViewModelApi,
+  InstallState,
+  InstallViewModelApi,
+  SettingsState,
+  SettingsViewModelApi,
   DomainConstants,
   KitApi,
   Palette,
