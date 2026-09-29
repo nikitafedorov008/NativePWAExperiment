@@ -318,7 +318,7 @@
   <h2>One domain layer, swappable UI kits</h2>
   <div style="margin-top:38px; display:flex; flex-direction:column; gap:0;">
     <div style="display:flex; gap:20px;">
-      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-db"/></svg>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors. Zero UI imports, fully unit-tested (unit-tested).</p></div>
+      <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-db"/></svg>Domain — src/domain</h3><p>Pure reducer, versioned localStorage persistence, streak &amp; progress selectors — TypeScript, zero UI imports, unit-tested.</p></div>
       <div class="box" style="flex:1.4;"><h3><svg class="ic"><use href="#i-compass"/></svg>Platform — src/platform</h3><p>Detects OS, browser, display mode and install status; resolves the design language (override → installed → custom) and owns the install prompt store.</p></div>
       <div class="box" style="flex:1;"><h3><svg class="ic"><use href="#i-globe"/></svg>PWA shell</h3><p>vite-plugin-pwa: manifest, auto-updating service worker, per-kit lazy chunks, offline precache.</p></div>
     </div>
@@ -396,7 +396,8 @@
         npm install<br/>
         npm run dev &nbsp;&nbsp;<span style="color:var(--muted)"># http://localhost:5173</span><br/>
         npm run build &nbsp;<span style="color:var(--muted)"># static dist/ — host anywhere</span><br/>
-        npm test &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--muted)"># unit tests</span>
+        npm test &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--muted)"># unit tests</span><br/>
+        npm run typecheck <span style="color:var(--muted)"># tsc --noEmit, strict</span>
       </div>
       <p class="sub" style="font-size:15px; margin-top:18px;">Open it in a browser tab for the custom look — then install it and watch the UI switch to your platform’s design language.</p>
     </div>

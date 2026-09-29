@@ -31,10 +31,12 @@ You can force any language for a preview: `?design=cupertino|material|fluent|yar
   <img src="docs/assets/readme-architecture.png" alt="Architecture: one domain layer, swappable UI kits" width="900" />
 </p>
 
-- **`src/domain`** — pure habit logic: a reducer, versioned localStorage persistence, streak/progress selectors. Zero UI imports, fully unit-tested.
+Everything is **TypeScript** in strict mode (`npm run typecheck`), and the layers are deliberately separable:
+
+- **`src/domain`** — pure habit logic: a reducer, versioned localStorage persistence, streak/progress selectors, and the types they work on (`Habit`, `DateKey`, `HabitStats`). Zero UI imports, zero DOM, fully unit-tested.
 - **`src/platform`** — detects OS, browser, display mode and install status; owns the captured `beforeinstallprompt` flow with per-browser install instructions; feeds the detector's answer into the kit's design-language resolver.
-- **`packages/ui-kit`** — a workspace package with all UI: the six design languages, the adaptive switcher, and the widget kit. It never imports application code — the app injects the domain API into it (`src/app/App.jsx`), so the package can be lifted into another project as-is. See [its README](packages/ui-kit/README.md).
-- **`src/app`** — the composition root: builds the API object (habits, install flow, platform info, constants) and mounts the kit.
+- **`packages/ui-kit`** — a workspace package with all UI: the six design languages, the adaptive switcher, and the widget kit. It never imports application code — the app injects the domain API into it (`src/app/App.tsx`) and TypeScript checks that object against the kit's `KitApi` contract, so the package can be lifted into another project as-is. See [its README](packages/ui-kit/README.md).
+- **`src/app`** — the composition root: builds that API object (habits, install flow, platform info, constants) and mounts the kit.
 
 ### Inside the kit
 
@@ -62,9 +64,10 @@ All habit-specific styling (check circles, week strips, emoji grid, stat tiles) 
 git clone https://github.com/nikitafedorov008/NativePWAExperiment
 cd NativePWAExperiment
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # static dist/ — host anywhere
-npm test         # unit tests (domain + design-system resolution)
+npm run dev        # http://localhost:5173
+npm run build      # static dist/ — host anywhere
+npm test           # unit tests (domain + design-system resolution)
+npm run typecheck  # tsc --noEmit, strict
 ```
 
 Open the dev URL in a browser tab for the `custom` look — then **install** the app (banner or browser menu) and launch it from your home screen / dock to see your platform's native language.

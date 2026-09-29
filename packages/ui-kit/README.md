@@ -1,7 +1,8 @@
 # @native-pwa-experiment/ui-kit
 
 Six design languages — **Cupertino, Material, Fluent, Yaru, custom, shadcn** — rendered by the same
-habit-tracker UI. Three engines draw them:
+habit-tracker UI. Written in TypeScript; the package ships its sources (`.ts` / `.tsx`) and its props
+and contracts are typed.
 
 | Design language | Engine | Native to |
 |---|---|---|

@@ -6,9 +6,10 @@
   "description": "Six design languages (Cupertino, Material, Fluent, Yaru, custom, shadcn) rendered from one component tree",
   "keywords": ["pwa", "design-system", "framework7", "fluent", "cupertino", "material", "yaru", "shadcn"],
   "exports": {
-    ".": "./src/index.js",
-    "./design-systems": "./src/designSystems.js"
+    ".": "./src/index.ts",
+    "./design-systems": "./src/designSystems.ts"
   },
+  "types": "./src/index.ts",
   "peerDependencies": {
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
